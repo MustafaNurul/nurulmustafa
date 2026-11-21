@@ -1,0 +1,4148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Pulau Kata Ajaib — Kurikulum Plus Kelas 4</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js r128 untuk Dunia Pulau 3D Realistis -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Google Fonts: Fredoka (ramah anak), Nunito (jelas dibaca), Amiri & Noto Naskh Arabic (Arab berharakat lega) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fredoka:wght@500;600;700&family=Noto+Naskh+Arabic:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Fredoka', 'Nunito', 'sans-serif'],
+            sans: ['Nunito', 'sans-serif'],
+            arabic: ['"Noto Naskh Arabic"', 'Amiri', 'serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* =========================================
+       TEMA VISUAL PULAU KATA AJAIB & ANIMASI
+       ========================================= */
+    :root {
+      --bg-sky-top: #dff4ff;
+      --bg-sky-mid: #f3f9ff;
+      --bg-sand: #fff7dc;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(180deg, var(--bg-sky-top) 0%, var(--bg-sky-mid) 52%, var(--bg-sand) 100%);
+      color: #1e293b;
+      -webkit-tap-highlight-color: transparent;
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* Tipografi Arab yang lega agar harakat (Tashkeel) tidak bertumpuk */
+    .arabic-text {
+      font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+      direction: rtl;
+      unicode-bidi: isolate;
+      line-height: 2.15 !important;
+      letter-spacing: 0 !important;
+    }
+
+    .arabic-hero {
+      font-size: clamp(2.15rem, 6vw, 3.25rem);
+      font-weight: 700;
+    }
+
+    .arabic-card {
+      font-size: clamp(2rem, 4.5vw, 2.5rem);
+      font-weight: 700;
+    }
+
+    /* Tombol 3D Taktil Ramah Anak */
+    .btn-3d {
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease, filter 0.15s ease;
+      box-shadow: 0 6px 0 rgba(15, 23, 42, 0.18);
+      user-select: none;
+      cursor: pointer;
+    }
+    .btn-3d:hover {
+      filter: brightness(1.04);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 rgba(15, 23, 42, 0.18);
+    }
+    .btn-3d:active {
+      transform: translateY(4px) scale(0.98);
+      box-shadow: 0 2px 0 rgba(15, 23, 42, 0.18);
+    }
+
+    .btn-3d-blue   { box-shadow: 0 6px 0 #1d4ed8; }
+    .btn-3d-blue:active { box-shadow: 0 2px 0 #1d4ed8; }
+    .btn-3d-emerald { box-shadow: 0 6px 0 #047857; }
+    .btn-3d-emerald:active { box-shadow: 0 2px 0 #047857; }
+    .btn-3d-amber  { box-shadow: 0 6px 0 #b45309; }
+    .btn-3d-amber:active { box-shadow: 0 2px 0 #b45309; }
+    .btn-3d-purple { box-shadow: 0 6px 0 #6d28d9; }
+    .btn-3d-purple:active { box-shadow: 0 2px 0 #6d28d9; }
+    .btn-3d-rose   { box-shadow: 0 6px 0 #be123c; }
+    .btn-3d-rose:active { box-shadow: 0 2px 0 #be123c; }
+    .btn-3d-slate  { box-shadow: 0 5px 0 #cbd5e1; }
+    .btn-3d-slate:active { box-shadow: 0 2px 0 #cbd5e1; }
+
+    /* Kartu Flip 3D (Flashcard & Memory Match) */
+    .perspective-1200 {
+      perspective: 1200px;
+    }
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.62s cubic-bezier(0.34, 1.4, 0.64, 1);
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+    }
+    .flip-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 1.75rem;
+    }
+    .flip-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Animasi Maskot & Elemen Game */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes bounceHappy {
+      0%, 100% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-16px) scale(1.08) rotate(-4deg); }
+      60% { transform: translateY(-6px) scale(1.03) rotate(4deg); }
+    }
+    @keyframes wiggleSoft {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-6deg); }
+      75% { transform: rotate(6deg); }
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55); }
+      70% { transform: scale(1.02); box-shadow: 0 0 0 18px rgba(59, 130, 246, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+    @keyframes flameDance {
+      0%, 100% { transform: scale(1) rotate(-3deg); }
+      50% { transform: scale(1.14) rotate(3deg); }
+    }
+    @keyframes cloudDrift {
+      0% { transform: translateX(-10px); }
+      50% { transform: translateX(14px); }
+      100% { transform: translateX(-10px); }
+    }
+
+    .animate-float { animation: floatSlow 3.4s ease-in-out infinite; }
+    .animate-happy { animation: bounceHappy 0.7s ease-in-out 2; }
+    .animate-wiggle { animation: wiggleSoft 0.55s ease-in-out 2; }
+    .animate-pulse-ring { animation: pulseRing 1.9s infinite; }
+    .animate-flame { animation: flameDance 0.9s ease-in-out infinite; }
+
+    /* Kanvas Dunia 3D & Confetti Layar Penuh */
+    #three-world-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      display: block;
+    }
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 60;
+      pointer-events: none;
+    }
+
+    /* Panel Kaca Studio Profesional (Ultra Ringan & Adaptif GPU) */
+    .studio-glass {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.78);
+      box-shadow: 0 12px 28px -12px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .studio-glass-dark {
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
+      color: #ffffff;
+    }
+
+    /* Hemat GPU pada layar kecil / HP agar 60fps tetap mulus */
+    @media (max-width: 768px) {
+      .studio-glass {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      .studio-glass-dark {
+        background: rgba(15, 23, 42, 0.84);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+    }
+
+    /* Halaman Awal Masuk (Entry Splash Screen) — Ultra Ringan & Responsif */
+    #entry-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+      background: radial-gradient(circle at 50% 20%, rgba(125, 211, 252, 0.92) 0%, rgba(56, 189, 248, 0.86) 45%, rgba(30, 64, 175, 0.92) 100%);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    #entry-splash.is-leaving {
+      opacity: 0;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+
+    /* Penyesuaian Otomatis Layar Pendek / HP Lanskap */
+    @media (max-height: 560px) and (orientation: landscape) {
+      #island-stage-window {
+        height: 175px !important;
+      }
+      .fc-stage-height {
+        height: 330px !important;
+      }
+    }
+
+    /* Tema Latar Adaptif Pagi / Senja / Malam */
+    body.mood-day {
+      background: radial-gradient(circle at 50% 18%, #7dd3fc 0%, #bae6fd 42%, #e0f2fe 100%);
+    }
+    body.mood-sunset {
+      background: radial-gradient(circle at 50% 20%, #fb923c 0%, #f472b6 45%, #4c1d95 100%);
+    }
+    body.mood-night {
+      background: radial-gradient(circle at 50% 15%, #1e3a8a 0%, #0f172a 58%, #020617 100%);
+    }
+
+    /* Kartu Flashcard 3D Tilt + Kilau Spekular */
+    .tilt-stage {
+      transform-style: preserve-3d;
+      transition: transform 0.14s ease-out;
+      will-change: transform;
+    }
+    .card-sheen {
+      position: absolute;
+      inset: 0;
+      border-radius: 1.75rem;
+      pointer-events: none;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0) 58%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      z-index: 5;
+    }
+    .tilt-stage:hover .card-sheen {
+      opacity: 1;
+    }
+
+    /* Floating XP & Combo Popups (Studio Juice) */
+    @keyframes floatUpFade {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(0.7); }
+      18% { opacity: 1; transform: translate(-50%, -12px) scale(1.12); }
+      80% { opacity: 1; transform: translate(-50%, -56px) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -82px) scale(0.9); }
+    }
+    .fx-popup {
+      position: fixed;
+      z-index: 95;
+      pointer-events: none;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      text-shadow: 0 3px 0 rgba(15, 23, 42, 0.28);
+      animation: floatUpFade 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Audio Equalizer Bars */
+    @keyframes eqBounce {
+      0%, 100% { transform: scaleY(0.25); }
+      50% { transform: scaleY(1); }
+    }
+    .eq-bar {
+      width: 6px;
+      height: 28px;
+      border-radius: 99px;
+      background: linear-gradient(180deg, #34d399, #0ea5e9);
+      transform-origin: bottom;
+      transform: scaleY(0.25);
+      transition: transform 0.2s ease;
+    }
+    .eq-active .eq-bar {
+      animation: eqBounce 0.55s ease-in-out infinite;
+    }
+    .eq-active .eq-bar:nth-child(2) { animation-delay: 0.12s; }
+    .eq-active .eq-bar:nth-child(3) { animation-delay: 0.24s; }
+    .eq-active .eq-bar:nth-child(4) { animation-delay: 0.36s; }
+    .eq-active .eq-bar:nth-child(5) { animation-delay: 0.18s; }
+
+    /* Mode Jelajah 3D Layar Penuh */
+    body.explore-3d-active #app-main {
+      opacity: 0;
+      pointer-events: none !important;
+      transform: translateY(24px);
+    }
+    #app-main {
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+  </style>
+</head>
+<body class="relative mood-day selection:bg-amber-200 selection:text-slate-900">
+
+  <!-- HALAMAN AWAL MASUK (OTOMATIS FULL SCREEN & AKTIFKAN AUDIO SAAT DIKLIK) -->
+  <section id="entry-splash" aria-label="Halaman Awal Pulau Kata Ajaib">
+    <div class="w-full max-w-lg bg-white/95 rounded-3xl border-4 border-white shadow-2xl p-6 sm:p-8 text-center space-y-5 max-h-[92dvh] overflow-y-auto">
+      <div class="flex justify-center">
+        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500 p-2.5 shadow-xl ring-4 ring-sky-200 animate-float">
+          <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+            <ellipse cx="50" cy="60" rx="33" ry="32" fill="#38bdf8"/>
+            <ellipse cx="50" cy="67" rx="22" ry="21" fill="#e0f2fe"/>
+            <polygon points="24,35 30,17 42,30" fill="#0284c7"/>
+            <polygon points="76,35 70,17 58,30" fill="#0284c7"/>
+            <ellipse cx="19" cy="61" rx="8" ry="15" transform="rotate(14 19 61)" fill="#0284c7"/>
+            <ellipse cx="81" cy="61" rx="8" ry="15" transform="rotate(-14 81 61)" fill="#0284c7"/>
+            <circle cx="40" cy="48" r="12" fill="#ffffff"/>
+            <circle cx="60" cy="48" r="12" fill="#ffffff"/>
+            <circle cx="40" cy="48" r="4.8" fill="#1e293b"/><circle cx="41.5" cy="46.5" r="1.7" fill="#fff"/>
+            <circle cx="60" cy="48" r="4.8" fill="#1e293b"/><circle cx="61.5" cy="46.5" r="1.7" fill="#fff"/>
+            <ellipse cx="29" cy="57" rx="4.5" ry="2.6" fill="#fda4af" opacity="0.85"/>
+            <ellipse cx="71" cy="57" rx="4.5" ry="2.6" fill="#fda4af" opacity="0.85"/>
+            <polygon points="45,54 55,54 50,62" fill="#f59e0b"/>
+            <rect x="38" y="88" width="8" height="6" rx="3" fill="#f59e0b"/>
+            <rect x="54" y="88" width="8" height="6" rx="3" fill="#f59e0b"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <div class="inline-flex items-center gap-1.5 bg-sky-100 text-sky-800 font-black text-xs px-3.5 py-1 rounded-full">
+          <span>🏝️</span>
+          <span>KURIKULUM PLUS KELAS 4</span>
+          <span class="bg-sky-500 text-white px-2 py-0.5 rounded-full text-[10px]">3D RINGAN</span>
+        </div>
+        <h1 class="font-display font-bold text-3xl sm:text-4xl text-slate-800 leading-tight">
+          Pulau Kata Ajaib
+        </h1>
+        <p class="text-sm sm:text-base font-bold text-slate-500">
+          Belajar & Bermain Kosakata Inggris & Arab Berharakat Lengkap
+        </p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-2.5">
+          <div class="text-lg sm:text-xl font-black text-sky-700">97+</div>
+          <div class="text-[11px] font-extrabold text-sky-700">Kosakata</div>
+        </div>
+        <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-2.5">
+          <div class="text-lg sm:text-xl font-black text-emerald-700">4 Mode</div>
+          <div class="text-[11px] font-extrabold text-emerald-700">Game Seru</div>
+        </div>
+        <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-2.5">
+          <div class="text-lg sm:text-xl font-black text-amber-600">EN & AR</div>
+          <div class="text-[11px] font-extrabold text-amber-700">Suara Asli</div>
+        </div>
+      </div>
+
+      <button id="btn-enter-game" onclick="enterGameExperience()" class="btn-3d btn-3d-emerald w-full bg-gradient-to-r from-emerald-400 via-teal-500 to-sky-500 text-white font-display font-bold text-xl sm:text-2xl py-4 px-6 rounded-3xl flex items-center justify-center gap-2.5 shadow-xl">
+        <span>🚀</span>
+        <span>Mulai Petualangan</span>
+      </button>
+
+      <p class="text-[11px] sm:text-xs font-bold text-slate-400">
+        ✨ Otomatis Layar Penuh • Suara Interaktif Aktif • Cocok di HP, Tablet & Laptop
+      </p>
+    </div>
+  </section>
+
+  <!-- DUNIA 3D PULAU KATA AJAIB (THREE.JS WEBGL) -->
+  <canvas id="three-world-canvas" aria-label="Dunia 3D Pulau Kata Ajaib Interaktif"></canvas>
+
+  <!-- Tooltip Landmark 3D Saat Hover -->
+  <div id="landmark-tooltip" class="hidden fixed z-30 pointer-events-none studio-glass-dark px-3.5 py-2 rounded-2xl shadow-2xl text-xs sm:text-sm font-extrabold tracking-wide -translate-x-1/2 -translate-y-full transition-opacity duration-150"></div>
+
+  <!-- Layer Floating XP / Combo Popups -->
+  <div id="fx-popup-layer" class="fixed inset-0 pointer-events-none z-50"></div>
+
+  <!-- Tombol Keluar Mode Jelajah 3D -->
+  <div id="explore-exit-bar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5">
+    <div class="studio-glass-dark px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold hidden sm:flex items-center gap-2">
+      <span>🖱️ Geser untuk putar 360° • Klik menara pulau untuk bermain!</span>
+    </div>
+    <button onclick="toggleExplore3D(false)" class="btn-3d btn-3d-amber bg-gradient-to-r from-amber-400 to-orange-500 text-white font-display font-bold px-5 py-3 rounded-2xl text-sm sm:text-base shadow-2xl">
+      🎮 Kembali ke Menu Game
+    </button>
+  </div>
+
+  <!-- Canvas Efek Confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Toast Notifikasi Ramah -->
+  <div id="toast-container" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 w-[92%] max-w-md pointer-events-none"></div>
+
+  <!-- Banner Info Jika Suara Arab Belum Terpasang di Perangkat -->
+  <div id="arabic-voice-banner" class="hidden relative z-30 bg-amber-100/95 backdrop-blur border-b-2 border-amber-300 text-amber-900 px-4 py-2.5 text-sm">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">💡</span>
+        <span><strong>Info Suara Arab:</strong> Perangkat ini belum memasang paket suara Arab (TTS). Suara Inggris tetap normal, dan kamu tetap bisa membaca tulisan Arab berharakat + cara baca Latinnya!</span>
+      </div>
+      <button onclick="dismissVoiceBanner()" class="shrink-0 bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold px-3 py-1 rounded-xl text-xs">Tutup</button>
+    </div>
+  </div>
+
+  <!-- HEADER STUDIO UTAMA -->
+  <header class="relative z-20 sticky top-0 bg-white/75 backdrop-blur-xl border-b-2 border-white/70 shadow-sm">
+    <div class="max-w-5xl mx-auto px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <!-- Logo & Tombol Beranda -->
+      <button onclick="navigateTo('home')" class="flex items-center gap-2.5 text-left group focus:outline-none">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-400 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform text-2xl ring-2 ring-white/80">
+          🏝️
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-lg sm:text-xl text-slate-800 leading-tight flex items-center gap-1.5">
+            Pulau Kata Ajaib
+            <span class="text-[10px] font-black uppercase bg-gradient-to-r from-sky-500 to-indigo-500 text-white px-2 py-0.5 rounded-full shadow-sm">3D</span>
+          </h1>
+          <p class="text-[11px] sm:text-xs font-bold text-sky-700 leading-tight">Kurikulum Plus Kelas 4 • EN & AR</p>
+        </div>
+      </button>
+
+      <!-- Kontrol Studio: Level/XP, Suasana 3D, Musik, Siput Mode, Mute SFX, Guru/Ortu -->
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
+        <!-- Indikator XP & Level -->
+        <button onclick="openBadgesModal()" title="Lihat Lencana & Level" class="flex items-center gap-1.5 bg-amber-50/90 hover:bg-amber-100 border-2 border-amber-300 rounded-2xl px-2.5 py-1.5 transition shadow-sm">
+          <span class="text-base">⭐</span>
+          <div class="text-left leading-none">
+            <div class="text-[10px] font-extrabold text-amber-700 uppercase">Lv.<span id="hdr-level">1</span></div>
+            <div class="text-xs font-black text-slate-800"><span id="hdr-xp">0</span> XP</div>
+          </div>
+        </button>
+
+        <!-- Toggle Suasana 3D (Pagi / Senja / Malam) -->
+        <button id="btn-mood-3d" onclick="cycleLightingMood()" title="Ubah Suasana Pulau 3D (Pagi/Senja/Malam)" class="flex items-center gap-1 bg-amber-50/90 hover:bg-amber-100 border-2 border-amber-200 rounded-2xl px-2.5 py-1.5 text-xs font-extrabold text-amber-900 transition shadow-sm">
+          <span id="mood-icon" class="text-base">☀️</span>
+          <span id="mood-label" class="hidden md:inline">Pagi</span>
+        </button>
+
+        <!-- Toggle Mode Siput (0.65x vs 1.0x) -->
+        <button id="btn-snail-global" onclick="toggleSnailMode()" title="Mode Siput (Suara Lambat 0.65x)" class="flex items-center gap-1 bg-sky-50/90 hover:bg-sky-100 border-2 border-sky-200 rounded-2xl px-2.5 py-1.5 text-xs font-extrabold text-sky-800 transition shadow-sm">
+          <span id="snail-icon" class="text-base">🐇</span>
+          <span id="snail-label" class="hidden sm:inline">Normal 1x</span>
+        </button>
+
+        <!-- Toggle Musik Pulau Ambient -->
+        <button id="btn-bgm-toggle" onclick="toggleBgm()" title="Musik Pulau Ajaib" class="w-10 h-10 flex items-center justify-center bg-emerald-50/90 hover:bg-emerald-100 border-2 border-emerald-200 rounded-2xl text-base transition shadow-sm" aria-label="Toggle Musik Latar">
+          🎵
+        </button>
+
+        <!-- Toggle Mute/Unmute SFX -->
+        <button id="btn-mute-sfx" onclick="toggleMuteSfx()" title="Suara Efek Game" class="w-10 h-10 flex items-center justify-center bg-slate-50/90 hover:bg-slate-100 border-2 border-slate-200 rounded-2xl text-lg transition shadow-sm" aria-label="Toggle Efek Suara">
+          🔊
+        </button>
+
+        <!-- Toggle Layar Penuh (Fullscreen) -->
+        <button id="btn-fullscreen" onclick="toggleFullscreen()" title="Layar Penuh (Fullscreen)" class="w-10 h-10 flex items-center justify-center bg-sky-50/90 hover:bg-sky-100 border-2 border-sky-200 rounded-2xl text-base font-black text-sky-800 transition shadow-sm" aria-label="Toggle Layar Penuh">
+          ⛶
+        </button>
+
+        <!-- Tombol Guru / Orang Tua -->
+        <button onclick="openParentGate()" class="flex items-center gap-1.5 bg-purple-50/90 hover:bg-purple-100 border-2 border-purple-200 rounded-2xl px-3 py-1.5 text-xs sm:text-sm font-extrabold text-purple-800 transition shadow-sm">
+          <span>⚙️</span>
+          <span class="hidden md:inline">Kelola Kata</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA -->
+  <main id="app-main" class="relative z-10 max-w-5xl mx-auto px-3 sm:px-5 py-5 pb-16 min-h-[calc(100vh-80px)] pointer-events-none"></main>
+
+  <!-- MODAL LENCANA & LEVEL -->
+  <div id="badges-modal" class="hidden fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeBadgesModal()">
+    <div class="bg-white rounded-3xl border-4 border-amber-300 shadow-2xl w-full max-w-xl max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="bg-gradient-to-r from-amber-400 to-orange-400 text-white px-5 py-4 flex items-center justify-between">
+        <h2 class="font-display font-bold text-xl flex items-center gap-2">🏆 Lencana Petualang</h2>
+        <button onclick="closeBadgesModal()" class="w-9 h-9 rounded-xl bg-white/25 hover:bg-white/35 font-black text-lg flex items-center justify-center">✕</button>
+      </div>
+      <div id="badges-modal-body" class="p-5 overflow-y-auto space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- MODAL GERBANG KONFIRMASI GURU / ORANG TUA -->
+  <div id="parent-gate-modal" class="hidden fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeParentGate()">
+    <div class="bg-white rounded-3xl border-4 border-purple-300 shadow-2xl w-full max-w-sm p-6 text-center space-y-4">
+      <div class="text-4xl">🔐</div>
+      <div>
+        <h2 class="font-display font-bold text-xl text-slate-800">Area Guru & Orang Tua</h2>
+        <p class="text-xs font-bold text-slate-500 mt-1">Jawab perkalian singkat ini untuk membuka panel pengelolaan kata:</p>
+      </div>
+      <div id="gate-question" class="font-display font-bold text-3xl text-purple-700 bg-purple-50 border-2 border-purple-200 py-3 rounded-2xl"></div>
+      <div id="gate-options" class="grid grid-cols-3 gap-2.5"></div>
+      <p id="gate-feedback" class="text-xs font-extrabold text-rose-500 min-h-[1rem]"></p>
+      <button onclick="closeParentGate()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold py-2.5 rounded-2xl text-sm">Batal</button>
+    </div>
+  </div>
+
+  <!-- MODAL PANEL GURU / ORANG TUA (LAPORAN & UPLOAD KOSAKATA) -->
+  <div id="teacher-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5" onclick="if(event.target === this) closeTeacherModal()">
+    <div class="bg-white rounded-3xl border-4 border-sky-300 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 text-white px-5 py-4 flex items-center justify-between gap-2">
+        <div>
+          <h2 class="font-display font-bold text-lg sm:text-xl flex items-center gap-2">⚙️ Panel Guru & Orang Tua</h2>
+          <p class="text-xs font-bold text-sky-100"><span id="teacher-word-count">0</span> kosakata aktif • <span id="sync-status-label">💾 Tersimpan otomatis</span></p>
+        </div>
+        <button onclick="closeTeacherModal()" class="w-9 h-9 rounded-xl bg-white/25 hover:bg-white/35 font-black text-lg flex items-center justify-center shrink-0">✕</button>
+      </div>
+      <div class="bg-slate-100 px-4 pt-3 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200">
+        <button id="tab-btn-report" onclick="switchTeacherTab('report')" class="px-4 py-2 rounded-t-2xl font-bold text-sm border-b-4 border-sky-500 bg-white text-sky-700 transition whitespace-nowrap">📊 Laporan Hafalan</button>
+        <button id="tab-btn-upload" onclick="switchTeacherTab('upload')" class="px-4 py-2 rounded-t-2xl font-bold text-sm border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition whitespace-nowrap">📤 Upload / Tambah Kata</button>
+        <button id="tab-btn-list" onclick="switchTeacherTab('list')" class="px-4 py-2 rounded-t-2xl font-bold text-sm border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition whitespace-nowrap">📚 Daftar Kosakata</button>
+      </div>
+      <div id="teacher-tab-content" class="p-4 sm:p-5 overflow-y-auto flex-1"></div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       1. DATA KOSAKATA LENGKAP 100% KURIKULUM PLUS KELAS 4 (INGGRIS & ARAB)
+       Diekstrak penuh dari KOSA KATA KURPLUS KELAS 4-1.pdf (Halaman 1–4)
+       Total: 97 kosakata unik berharakat lengkap (Tashkeel), Transliterasi & Emoji
+       ========================================================================= */
+    const DEFAULT_VOCAB = [
+      // --- PAKET INGGRIS: GREETINGS (Sapaan) ---
+      { id: "en-01", pack: "Inggris", category: "Sapaan", idWord: "Selamat pagi", enWord: "Good morning", arWord: "صَبَاحُ الْخَيْرِ", translit: "Shabaahul khair", emoji: "🌅" },
+      { id: "en-02", pack: "Inggris", category: "Sapaan", idWord: "Selamat siang", enWord: "Good afternoon", arWord: "نَهَارُكَ سَعِيدٌ", translit: "Nahaaruka sa'iid", emoji: "☀️" },
+      { id: "en-03", pack: "Inggris", category: "Sapaan", idWord: "Selamat sore", enWord: "Good evening", arWord: "مَسَاءُ الْخَيْرِ", translit: "Masaa-ul khair", emoji: "🌇" },
+      { id: "en-04", pack: "Inggris", category: "Sapaan", idWord: "Selamat malam", enWord: "Good night", arWord: "تُصْبِحُ عَلَى خَيْرٍ", translit: "Tushbihu 'alaa khair", emoji: "🌙" },
+      { id: "en-05", pack: "Inggris", category: "Sapaan", idWord: "Selamat tinggal", enWord: "Goodbye", arWord: "إِلَى اللِّقَاءِ", translit: "Ilal liqaa'", emoji: "👋" },
+
+      // --- PAKET INGGRIS: NOUN (Kata Benda) ---
+      { id: "en-06", pack: "Inggris", category: "Kata Benda", idWord: "Guru", enWord: "Teacher", arWord: "مُعَلِّمٌ", translit: "Mu'allimun", emoji: "🧑‍🏫" },
+      { id: "en-07", pack: "Inggris", category: "Kata Benda", idWord: "Murid", enWord: "Students", arWord: "تَلَامِيذُ", translit: "Talaamiidzu", emoji: "🧑‍🎓" },
+      { id: "en-11", pack: "Inggris", category: "Kata Benda", idWord: "Kursi berlengan", enWord: "Armchair", arWord: "كُرْسِيٌّ بِذِرَاعَيْنِ", translit: "Kursiyyun bidziraa'aini", emoji: "🪑" },
+      { id: "en-12", pack: "Inggris", category: "Kata Benda", idWord: "Radio", enWord: "Radio", arWord: "مِذْيَاعٌ", translit: "Midzyaa'un", emoji: "📻" },
+      { id: "en-13", pack: "Inggris", category: "Kata Benda", idWord: "Rak buku", enWord: "Bookcase", arWord: "خِزَانَةُ كُتُبٍ", translit: "Khizaanatu kutubin", emoji: "📚" },
+      { id: "en-14", pack: "Inggris", category: "Kata Benda", idWord: "Ruang tamu", enWord: "Living room", arWord: "غُرْفَةُ الْجُلُوسِ", translit: "Ghurfatul juluus", emoji: "🛋️" },
+      { id: "en-15", pack: "Inggris", category: "Kata Benda", idWord: "Dedaunan", enWord: "Leaves", arWord: "أَوْرَاقُ الشَّجَرِ", translit: "Awraaqusy syajari", emoji: "🍃" },
+      { id: "en-16", pack: "Inggris", category: "Kata Benda", idWord: "Sapu", enWord: "Broom", arWord: "مِكْنَسَةٌ", translit: "Miknasatun", emoji: "🧹" },
+      { id: "en-17", pack: "Inggris", category: "Kata Benda", idWord: "Sekop", enWord: "Trowel", arWord: "مِجْرَفَةٌ صَغِيرَةٌ", translit: "Mijrafatun shaghiiratun", emoji: "⛏️" },
+      { id: "en-18", pack: "Inggris", category: "Kata Benda", idWord: "Biji-bijian", enWord: "Seeds", arWord: "بُذُورٌ", translit: "Budzuurun", emoji: "🌱" },
+      { id: "en-19", pack: "Inggris", category: "Kata Benda", idWord: "Pot", enWord: "Pot", arWord: "أَصِيصٌ", translit: "Ashiishun", emoji: "🪴" },
+      { id: "en-20", pack: "Inggris", category: "Kata Benda", idWord: "Pupuk", enWord: "Soil", arWord: "تُرْبَةٌ وَسَمَادٌ", translit: "Turbatun wa samaadun", emoji: "🌾" },
+      { id: "en-21", pack: "Inggris", category: "Kata Benda", idWord: "Taman", enWord: "Garden", arWord: "حَدِيقَةٌ", translit: "Hadiiqatun", emoji: "🌻" },
+
+      // --- PAKET INGGRIS: DAYS OF A WEEK (Nama Hari) ---
+      { id: "en-22", pack: "Inggris", category: "Nama Hari", idWord: "Senin", enWord: "Monday", arWord: "يَوْمُ الْإِثْنَيْنِ", translit: "Yaumul itsnain", emoji: "1️⃣" },
+      { id: "en-23", pack: "Inggris", category: "Nama Hari", idWord: "Selasa", enWord: "Tuesday", arWord: "يَوْمُ الثُّلَاثَاءِ", translit: "Yaumuts tsulaatsaa'", emoji: "2️⃣" },
+      { id: "en-24", pack: "Inggris", category: "Nama Hari", idWord: "Rabu", enWord: "Wednesday", arWord: "يَوْمُ الْأَرْبِعَاءِ", translit: "Yaumul arbi'aa'", emoji: "3️⃣" },
+      { id: "en-25", pack: "Inggris", category: "Nama Hari", idWord: "Kamis", enWord: "Thursday", arWord: "يَوْمُ الْخَمِيسِ", translit: "Yaumul khamiis", emoji: "4️⃣" },
+      { id: "en-26", pack: "Inggris", category: "Nama Hari", idWord: "Jumat", enWord: "Friday", arWord: "يَوْمُ الْجُمُعَةِ", translit: "Yaumul jumu'ah", emoji: "🕌" },
+      { id: "en-27", pack: "Inggris", category: "Nama Hari", idWord: "Sabtu", enWord: "Saturday", arWord: "يَوْمُ السَّبْتِ", translit: "Yaumus sabti", emoji: "6️⃣" },
+      { id: "en-28", pack: "Inggris", category: "Nama Hari", idWord: "Minggu", enWord: "Sunday", arWord: "يَوْمُ الْأَحَدِ", translit: "Yaumul ahad", emoji: "🗓️" },
+
+      // --- PAKET INGGRIS: ADJECTIVE (Kata Sifat) ---
+      { id: "en-29", pack: "Inggris", category: "Kata Sifat", idWord: "Bagus / Hebat", enWord: "Great", arWord: "رَائِعٌ", translit: "Raa-i'un", emoji: "🌟" },
+      { id: "en-30", pack: "Inggris", category: "Kata Sifat", idWord: "Buruk", enWord: "Bad", arWord: "سَيِّئٌ", translit: "Sayyi-un", emoji: "👎" },
+      { id: "en-31", pack: "Inggris", category: "Kata Sifat", idWord: "Bersih", enWord: "Clean", arWord: "نَظِيفٌ", translit: "Nazhiifun", emoji: "✨" },
+      { id: "en-32", pack: "Inggris", category: "Kata Sifat", idWord: "Berantakan", enWord: "Messy", arWord: "فَوْضَوِيٌّ", translit: "Faudhawiyyun", emoji: "🌪️" },
+      { id: "en-33", pack: "Inggris", category: "Kata Sifat", idWord: "Rapi", enWord: "Tidy", arWord: "مُرَتَّبٌ", translit: "Murattabun", emoji: "🧺" },
+      { id: "en-34", pack: "Inggris", category: "Kata Sifat", idWord: "Kesukaan", enWord: "Favourite", arWord: "مُفَضَّلٌ", translit: "Mufadhdhalun", emoji: "❤️" },
+
+      // --- PAKET INGGRIS: VERB (Kata Kerja) ---
+      { id: "en-35", pack: "Inggris", category: "Kata Kerja", idWord: "Mengepel", enWord: "Mop", arWord: "يَمْسَحُ الْأَرْضَ", translit: "Yamsahul ardha", emoji: "🧽" },
+      { id: "en-36", pack: "Inggris", category: "Kata Kerja", idWord: "Mengumpulkan", enWord: "Collect", arWord: "يَجْمَعُ", translit: "Yajma'u", emoji: "📦" },
+      { id: "en-37", pack: "Inggris", category: "Kata Kerja", idWord: "Minum", enWord: "Drink", arWord: "يَشْرَبُ", translit: "Yasyrabu", emoji: "🥤" },
+      { id: "en-38", pack: "Inggris", category: "Kata Kerja", idWord: "Makan", enWord: "Eat", arWord: "يَأْكُلُ", translit: "Ya'kulu", emoji: "🍽️" },
+      { id: "en-39", pack: "Inggris", category: "Kata Kerja", idWord: "Membangun", enWord: "Build", arWord: "يَبْنِي", translit: "Yabnii", emoji: "🏗️" },
+      { id: "en-40", pack: "Inggris", category: "Kata Kerja", idWord: "Mengambil", enWord: "Take", arWord: "يَأْخُذُ", translit: "Ya'khudzu", emoji: "🤲" },
+
+      // --- PAKET INGGRIS: PREPOSITION OF PLACE (Kata Depan) ---
+      { id: "en-41", pack: "Inggris", category: "Kata Depan", idWord: "Di depan", enWord: "In front of", arWord: "أَمَامَ", translit: "Amaama", emoji: "⬆️" },
+      { id: "en-42", pack: "Inggris", category: "Kata Depan", idWord: "Di belakang", enWord: "Behind", arWord: "وَرَاءَ", translit: "Waraa-a", emoji: "⬇️" },
+      { id: "en-43", pack: "Inggris", category: "Kata Depan", idWord: "Di samping", enWord: "Beside", arWord: "بِجَانِبِ", translit: "Bijaanibi", emoji: "➡️" },
+      { id: "en-44", pack: "Inggris", category: "Kata Depan", idWord: "Di atas", enWord: "On", arWord: "عَلَى", translit: "'Alaa", emoji: "🔝" },
+      { id: "en-45", pack: "Inggris", category: "Kata Depan", idWord: "Di bawah", enWord: "Under", arWord: "تَحْتَ", translit: "Tahta", emoji: "⏬" },
+
+      // --- PAKET INGGRIS: INSECTS (Serangga) ---
+      { id: "en-46", pack: "Inggris", category: "Serangga", idWord: "Kupu-kupu", enWord: "Butterfly", arWord: "فَرَاشَةٌ", translit: "Faraasyatun", emoji: "🦋" },
+      { id: "en-47", pack: "Inggris", category: "Serangga", idWord: "Kumbang kepik", enWord: "Ladybug", arWord: "دُعْسُوقَةٌ", translit: "Du'suuqatun", emoji: "🐞" },
+      { id: "en-48", pack: "Inggris", category: "Serangga", idWord: "Belalang", enWord: "Grasshopper", arWord: "جَرَادَةٌ", translit: "Jaraadatun", emoji: "🦗" },
+      { id: "en-49", pack: "Inggris", category: "Serangga", idWord: "Lebah", enWord: "Bee", arWord: "نَحْلَةٌ", translit: "Nahlatun", emoji: "🐝" },
+      { id: "en-50", pack: "Inggris", category: "Serangga", idWord: "Serangga", enWord: "Insect", arWord: "حَشَرَةٌ", translit: "Hasyaratun", emoji: "🐛" },
+
+      // --- PAKET ARAB: ALAMAT (العُنْوَانُ) ---
+      { id: "ar-01", pack: "Arab", category: "Alamat", idWord: "Rumah", enWord: "House", arWord: "بَيْتٌ", translit: "Baitun", emoji: "🏠" },
+      { id: "ar-02", pack: "Arab", category: "Alamat", idWord: "Jalan", enWord: "Street", arWord: "شَارِعٌ", translit: "Syari'un", emoji: "🛣️" },
+      { id: "ar-03", pack: "Arab", category: "Alamat", idWord: "Kota", enWord: "City", arWord: "مَدِينَةٌ", translit: "Madinatun", emoji: "🏙️" },
+      { id: "ar-04", pack: "Arab", category: "Alamat", idWord: "Desa", enWord: "Village", arWord: "قَرْيَةٌ", translit: "Qoryatun", emoji: "🏡" },
+      { id: "ar-05", pack: "Arab", category: "Alamat", idWord: "Gedung", enWord: "Building", arWord: "مَبْنًى", translit: "Mabnan", emoji: "🏢" },
+      { id: "ar-06", pack: "Arab", category: "Alamat", idWord: "Tempat tinggal", enWord: "Residence", arWord: "مَسْكَنٌ", translit: "Maskanun", emoji: "🏘️" },
+      { id: "ar-07", pack: "Arab", category: "Alamat", idWord: "Nomor rumah", enWord: "House number", arWord: "رَقْمُ الْبَيْتِ", translit: "Raqmul baiti", emoji: "🔢" },
+      { id: "ar-08", pack: "Arab", category: "Alamat", idWord: "Lantai", enWord: "Floor", arWord: "الطَّابِقُ", translit: "At-thabiqu", emoji: "🪜" },
+      { id: "ar-09", pack: "Arab", category: "Alamat", idWord: "Lingkungan", enWord: "Neighborhood", arWord: "الْحَيُّ", translit: "Al-hayyu", emoji: "🌳" },
+      { id: "ar-10", pack: "Arab", category: "Alamat", idWord: "Negara", enWord: "Country", arWord: "الْبَلَدُ", translit: "Al-baladu", emoji: "🌍" },
+      { id: "ar-11", pack: "Arab", category: "Alamat", idWord: "Dekat", enWord: "Near", arWord: "قَرِيبٌ", translit: "Qoribun", emoji: "📍" },
+      { id: "ar-12", pack: "Arab", category: "Alamat", idWord: "Jauh", enWord: "Far", arWord: "بَعِيدٌ", translit: "Ba'idun", emoji: "🔭" },
+      { id: "ar-13", pack: "Arab", category: "Alamat", idWord: "Hape", enWord: "Mobile phone", arWord: "هَاتِفٌ", translit: "Haatifun", emoji: "📱" },
+      { id: "ar-14", pack: "Arab", category: "Alamat", idWord: "Alamat", enWord: "Address", arWord: "عُنْوَانٌ", translit: "'Unwaanun", emoji: "🗺️" },
+
+      // --- PAKET ARAB: PROFESI (الْمِهْنَةُ) ---
+      { id: "ar-15", pack: "Arab", category: "Profesi", idWord: "Guru (lk)", enWord: "Male teacher", arWord: "مُدَرِّسٌ", translit: "Mudarrisun", emoji: "👨‍🏫" },
+      { id: "ar-16", pack: "Arab", category: "Profesi", idWord: "Guru (pr)", enWord: "Female teacher", arWord: "مُدَرِّسَةٌ", translit: "Mudarrisatun", emoji: "👩‍🏫" },
+      { id: "ar-17", pack: "Arab", category: "Profesi", idWord: "Dokter (lk)", enWord: "Male doctor", arWord: "طَبِيبٌ", translit: "Thobibun", emoji: "👨‍⚕️" },
+      { id: "ar-18", pack: "Arab", category: "Profesi", idWord: "Dokter (pr)", enWord: "Female doctor", arWord: "طَبِيبَةٌ", translit: "Thobibatun", emoji: "👩‍⚕️" },
+      { id: "ar-19", pack: "Arab", category: "Profesi", idWord: "Arsitek (lk)", enWord: "Male architect", arWord: "مُهَنْدِسٌ", translit: "Muhandisun", emoji: "👨‍🔧" },
+      { id: "ar-20", pack: "Arab", category: "Profesi", idWord: "Arsitek (pr)", enWord: "Female architect", arWord: "مُهَنْدِسَةٌ", translit: "Muhandisatun", emoji: "👩‍🔧" },
+      { id: "ar-21", pack: "Arab", category: "Profesi", idWord: "Petani (lk)", enWord: "Male farmer", arWord: "فَلَّاحٌ", translit: "Fallahun", emoji: "👨‍🌾" },
+      { id: "ar-22", pack: "Arab", category: "Profesi", idWord: "Petani (pr)", enWord: "Female farmer", arWord: "فَلَّاحَةٌ", translit: "Fallahatun", emoji: "👩‍🌾" },
+      { id: "ar-23", pack: "Arab", category: "Profesi", idWord: "Nelayan", enWord: "Fisherman", arWord: "صَيَّادٌ", translit: "Shayyadun", emoji: "🎣" },
+      { id: "ar-24", pack: "Arab", category: "Profesi", idWord: "Tentara", enWord: "Soldier", arWord: "جُنْدِيٌّ", translit: "Jundiyyun", emoji: "🪖" },
+      { id: "ar-25", pack: "Arab", category: "Profesi", idWord: "Polisi", enWord: "Policeman", arWord: "شُرْطِيٌّ", translit: "Syurthiyyun", emoji: "👮‍♂️" },
+      { id: "ar-26", pack: "Arab", category: "Profesi", idWord: "Polwan", enWord: "Policewoman", arWord: "شُرْطِيَّةٌ", translit: "Syurthiyyatun", emoji: "👮‍♀️" },
+      { id: "ar-27", pack: "Arab", category: "Profesi", idWord: "Pegawai (lk)", enWord: "Male employee", arWord: "مُوَظَّفٌ", translit: "Muwadzafun", emoji: "👨‍💼" },
+      { id: "ar-28", pack: "Arab", category: "Profesi", idWord: "Pegawai (pr)", enWord: "Female employee", arWord: "مُوَظَّفَةٌ", translit: "Muwadzafatun", emoji: "👩‍💼" },
+      { id: "ar-29", pack: "Arab", category: "Profesi", idWord: "Sopir", enWord: "Driver", arWord: "سَائِقٌ", translit: "Saaiqun", emoji: "🚕" },
+      { id: "ar-30", pack: "Arab", category: "Profesi", idWord: "Penjahit (lk)", enWord: "Male tailor", arWord: "خَيَّاطٌ", translit: "Khayyathun", emoji: "🧵" },
+      { id: "ar-31", pack: "Arab", category: "Profesi", idWord: "Penjahit (pr)", enWord: "Female tailor", arWord: "خَيَّاطَةٌ", translit: "Khayyathatun", emoji: "🪡" },
+
+      // --- PAKET ARAB: CITA-CITA (أَمَلِي) ---
+      { id: "ar-32", pack: "Arab", category: "Cita-cita", idWord: "Perwira", enWord: "Officer", arWord: "ضَابِطٌ", translit: "Dhobitun", emoji: "🎖️" },
+      { id: "ar-33", pack: "Arab", category: "Cita-cita", idWord: "Astronot", enWord: "Astronaut", arWord: "رَائِدُ فَضَاءٍ", translit: "Raaidu fadhaa-in", emoji: "👨‍🚀" },
+      { id: "ar-34", pack: "Arab", category: "Cita-cita", idWord: "Programer", enWord: "Programmer", arWord: "مُبَرْمِجٌ", translit: "Mubarmijun", emoji: "👨‍💻" },
+      { id: "ar-35", pack: "Arab", category: "Cita-cita", idWord: "Pilot", enWord: "Pilot", arWord: "طَيَّارٌ", translit: "Thayyarun", emoji: "👨‍✈️" },
+      { id: "ar-36", pack: "Arab", category: "Cita-cita", idWord: "Pengacara", enWord: "Lawyer", arWord: "مُحَامٍ", translit: "Muhaamin", emoji: "⚖️" },
+      { id: "ar-37", pack: "Arab", category: "Cita-cita", idWord: "Pelukis", enWord: "Painter", arWord: "رَسَّامٌ", translit: "Rassamun", emoji: "👨‍🎨" },
+      { id: "ar-38", pack: "Arab", category: "Cita-cita", idWord: "Pebisnis", enWord: "Businessman", arWord: "رَجُلُ أَعْمَالٍ", translit: "Rajulu a'maalin", emoji: "💼" },
+      { id: "ar-39", pack: "Arab", category: "Cita-cita", idWord: "Pedagang (lk)", enWord: "Male merchant", arWord: "تَاجِرٌ", translit: "Taajirun", emoji: "🏪" },
+      { id: "ar-40", pack: "Arab", category: "Cita-cita", idWord: "Pedagang (pr)", enWord: "Female merchant", arWord: "تَاجِرَةٌ", translit: "Taajiratun", emoji: "🛍️" },
+      { id: "ar-41", pack: "Arab", category: "Cita-cita", idWord: "Atlet", enWord: "Athlete", arWord: "لَاعِبٌ", translit: "Laa'ibun", emoji: "🏃" },
+      { id: "ar-42", pack: "Arab", category: "Cita-cita", idWord: "Penceramah (lk)", enWord: "Male preacher", arWord: "مُبَلِّغٌ", translit: "Muballighun", emoji: "🎙️" },
+      { id: "ar-43", pack: "Arab", category: "Cita-cita", idWord: "Penceramah (pr)", enWord: "Female preacher", arWord: "مُبَلِّغَةٌ", translit: "Muballighatun", emoji: "🎤" },
+      { id: "ar-44", pack: "Arab", category: "Cita-cita", idWord: "Ilmuwan (lk)", enWord: "Male scientist", arWord: "عَالِمٌ", translit: "'Aalimun", emoji: "👨‍🔬" },
+      { id: "ar-45", pack: "Arab", category: "Cita-cita", idWord: "Ilmuwan (pr)", enWord: "Female scientist", arWord: "عَالِمَةٌ", translit: "'Aalimatun", emoji: "👩‍🔬" },
+      { id: "ar-46", pack: "Arab", category: "Cita-cita", idWord: "Koki (lk)", enWord: "Male chef", arWord: "طَبَّاخٌ", translit: "Thabbakhun", emoji: "👨‍🍳" },
+      { id: "ar-47", pack: "Arab", category: "Cita-cita", idWord: "Koki (pr)", enWord: "Female chef", arWord: "طَبَّاخَةٌ", translit: "Thabbakhatun", emoji: "👩‍🍳" },
+      { id: "ar-48", pack: "Arab", category: "Cita-cita", idWord: "Reporter (lk)", enWord: "Male reporter", arWord: "صَحَافِيٌّ", translit: "Shahafiyyun", emoji: "📰" },
+      { id: "ar-49", pack: "Arab", category: "Cita-cita", idWord: "Reporter (pr)", enWord: "Female reporter", arWord: "صَحَافِيَّةٌ", translit: "Shahafiyyatun", emoji: "📺" },
+      { id: "ar-50", pack: "Arab", category: "Cita-cita", idWord: "Hakim", enWord: "Judge", arWord: "الْقَاضِي", translit: "Al-qodii", emoji: "👨‍⚖️" }
+    ];
+
+    /* =========================================================================
+       2. DAFTAR LENCANA (BADGES) & PESAN SEMANGAT POSITIF
+       ========================================================================= */
+    const BADGE_DEFS = [
+      { id: "first_round", icon: "🌟", title: "Langkah Pertama", desc: "Menyelesaikan 1 sesi permainan" },
+      { id: "master_10",   icon: "🦉", title: "Hafal 10 Kata", desc: "Menandai 10 kata sebagai Sudah Hafal" },
+      { id: "master_30",   icon: "🎓", title: "Juara Hafalan", desc: "Menandai 30 kata sebagai Sudah Hafal" },
+      { id: "combo_5",     icon: "🔥", title: "Api Semangat", desc: "Meraih 5x Combo Streak beruntun" },
+      { id: "audio_star",  icon: "👂", title: "Telinga Emas", desc: "Meraih 3 Bintang di Telinga Super" },
+      { id: "memory_hero", icon: "🧩", title: "Jagoan Memori", desc: "Menyelesaikan Cocokkan Pasangan" },
+      { id: "boss_slayer", icon: "👑", title: "Penakluk Bos", desc: "Menyelesaikan Misi Bintang" }
+    ];
+
+    const PRAISE_MESSAGES = [
+      "Hebat sekali! Kamu luar biasa! 🌟",
+      "Keren! Otakmu makin cemerlang! ✨",
+      "Tepat sekali! Terus lanjutkan ya! 🎉",
+      "MasyaAllah, pintar sekali! 🦉",
+      "Super sekali! Bintang untukmu! ⭐"
+    ];
+
+    const ENCOURAGE_MESSAGES = [
+      "Hampir benar! Yuk coba dengar lagi pelan-pelan! 🐢",
+      "Tidak apa-apa, belajar itu seru! Coba lagi ya! 💪",
+      "Bagus sudah berani mencoba! Mari kita ingat bersama! 🌈",
+      "Wah, kata ini masuk Keranjang Latihan biar makin hafal! 🧺"
+    ];
+
+    /* =========================================================================
+       3. STATE GLOBAL APLIKASI
+       ========================================================================= */
+    const state = {
+      vocab: JSON.parse(JSON.stringify(DEFAULT_VOCAB)),
+      selectedFilter: "ALL", // ALL, PACK_EN, PACK_AR, BASKET, atau nama kategori
+      currentView: "home",   // home, flashcard, audio, memory, mission
+      xp: 0,
+      roundsCompleted: 0,
+      bestCombo: 0,
+      masteredIds: [],       // array id kata yang sudah dikuasai
+      // Spaced Repetition: { [wordId]: { streak: 0 } } -> harus benar 2x beruntun untuk keluar
+      practiceBasket: {},
+      badges: [],
+      snailMode: false,
+      sfxMuted: false,
+      voiceBannerDismissed: false,
+      lightingMood: 'day', // 'day' | 'sunset' | 'night'
+      bgmEnabled: false,
+      explore3D: false,
+      isSpeaking: false,
+      teacherTab: "report",
+      mascotMood: "idle",
+      mascotSpeech: "Halo Sahabat! Siap berpetualang menghafal Inggris & Arab hari ini?",
+
+      // State Mode 1: Flashcard
+      fc: {
+        deck: [],
+        index: 0,
+        flipped: false
+      },
+
+      // State Mode 2: Telinga Super (Audio Quest)
+      audioGame: {
+        langMode: "MIX", // EN, AR, MIX
+        questions: [],
+        qIndex: 0,
+        score: 0,
+        correctCount: 0,
+        timerSec: 15,
+        timerId: null,
+        locked: false,
+        finished: false,
+        lastWrongId: null
+      },
+
+      // State Mode 3: Memory Match
+      memoryGame: {
+        pairMode: "EN_ID", // EN_ID, AR_ID, EN_AR
+        pairCount: 4,      // 4 atau 6 pasang
+        cards: [],
+        flippedIndices: [],
+        matchedPairs: 0,
+        moves: 0,
+        locked: false,
+        finished: false
+      },
+
+      // State Mode 4: Misi Bintang (Kuis Kilat & Boss Challenge)
+      missionGame: {
+        questions: [],
+        qIndex: 0,
+        score: 0,
+        correctCount: 0,
+        combo: 0,
+        maxComboRound: 0,
+        locked: false,
+        finished: false
+      }
+    };
+
+    /* =========================================================================
+       4. MESIN EFEK SUARA STUDIO & MUSIK PULAU (WEB AUDIO API)
+       ========================================================================= */
+    const SFX = {
+      ctx: null,
+      bgmInterval: null,
+      bgmStep: 0,
+
+      unlock() {
+        try {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+        } catch (e) {}
+      },
+
+      playTone(freq, type, duration, gainVal = 0.16, startDelay = 0, slideToFreq = null) {
+        if (state.sfxMuted) return;
+        this.unlock();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime + startDelay;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, now);
+          if (slideToFreq) {
+            osc.frequency.exponentialRampToValueAtTime(slideToFreq, now + duration);
+          }
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(gainVal, now + 0.014);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + duration + 0.025);
+        } catch (e) {}
+      },
+
+      pop() {
+        this.playTone(540, 'sine', 0.07, 0.14, 0, 860);
+      },
+
+      ding() {
+        // Aksen marimba-kristal ceria ala game studio
+        this.playTone(587.33, 'triangle', 0.15, 0.17, 0);
+        this.playTone(880.0, 'sine', 0.22, 0.16, 0.07);
+        this.playTone(1174.66, 'triangle', 0.28, 0.12, 0.14);
+      },
+
+      fanfare() {
+        const chord = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+        chord.forEach((n, idx) => {
+          this.playTone(n, 'triangle', 0.28, 0.16, idx * 0.075);
+          this.playTone(n * 0.5, 'sine', 0.24, 0.08, idx * 0.075);
+        });
+      },
+
+      whoosh() {
+        if (state.sfxMuted) return;
+        this.unlock();
+        if (!this.ctx) return;
+        try {
+          const bufferSize = Math.floor(this.ctx.sampleRate * 0.15);
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(520, this.ctx.currentTime);
+          filter.frequency.exponentialRampToValueAtTime(2100, this.ctx.currentTime + 0.14);
+
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.11, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          noise.start();
+        } catch (e) {}
+      },
+
+      boing() {
+        this.playTone(290, 'sine', 0.16, 0.13, 0, 215);
+        this.playTone(215, 'sine', 0.15, 0.10, 0.12, 255);
+      },
+
+      startBgm() {
+        this.stopBgm();
+        this.unlock();
+        // Melodi pentatonik tropis lembut ala marimba pulau
+        const melody = [523.25, 659.25, 783.99, 659.25, 880.0, 783.99, 659.25, 587.33];
+        this.bgmInterval = setInterval(() => {
+          if (!state.bgmEnabled || state.sfxMuted || state.isSpeaking) return;
+          const note = melody[this.bgmStep % melody.length];
+          this.playTone(note, 'sine', 0.42, 0.035, 0);
+          if (this.bgmStep % 4 === 0) {
+            this.playTone(note * 0.5, 'triangle', 0.65, 0.028, 0);
+          }
+          this.bgmStep++;
+        }, 620);
+      },
+
+      stopBgm() {
+        if (this.bgmInterval) {
+          clearInterval(this.bgmInterval);
+          this.bgmInterval = null;
+        }
+      }
+    };
+
+    /* =========================================================================
+       4B. DUNIA 3D REALISTIS PULAU KATA AJAIB (THREE.JS STUDIO ENGINE)
+       - Pencahayaan PBR, ACESFilmic Tone Mapping, Soft Shadows
+       - Pulau melayang terpahat, air terjun kristal, pohon bergoyang, awan 3D
+       - 4 Landmark 3D interaktif (klik langsung untuk masuk game)
+       - Maskot Kiko 3D hidup + partikel bintang 3D + kontrol kamera Orbit 360°
+       ========================================================================= */
+    const World3D = {
+      scene: null,
+      camera: null,
+      renderer: null,
+      clock: null,
+      islandGroup: null,
+      kikoGroup: null,
+      kikoParts: {},
+      waterMesh: null,
+      waterBaseY: [],
+      clouds: [],
+      trees: [],
+      fireflies: null,
+      burstParticles: [],
+      landmarks: [],
+      raycaster: null,
+      pointer: null,
+      hoveredLandmark: null,
+
+      // Pencahayaan dinamis Pagi / Senja / Malam
+      lights: {},
+
+      // Orbit & transisi kamera sinematik
+      orbit: {
+        dragging: false,
+        downX: 0,
+        downY: 0,
+        moved: false,
+        yaw: 0.32,
+        pitch: 0.30,
+        targetYaw: 0.32,
+        targetPitch: 0.30,
+        distance: 15.5,
+        targetDistance: 15.5,
+        lookAt: null,
+        targetLookAt: null
+      },
+
+      // Status animasi maskot Kiko 3D
+      kikoAnim: {
+        mood: 'idle',
+        timer: 0
+      },
+
+      // Mode performa ultra ringan otomatis
+      isLowPower: false,
+      paused: true,
+      rafId: null,
+      sharedBurstGeo: null,
+      contextLost: false,
+
+      makeGrassTexture() {
+        const c = document.createElement('canvas');
+        c.width = 128;
+        c.height = 128;
+        const g = c.getContext('2d');
+        g.fillStyle = '#4ade80';
+        g.fillRect(0, 0, 128, 128);
+        for (let i = 0; i < 420; i++) {
+          const x = Math.random() * 128;
+          const y = Math.random() * 128;
+          const r = Math.random() * 2.4 + 0.8;
+          g.fillStyle = i % 2 === 0 ? 'rgba(22, 163, 74, 0.25)' : 'rgba(187, 247, 208, 0.28)';
+          g.beginPath();
+          g.arc(x, y, r, 0, Math.PI * 2);
+          g.fill();
+        }
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(3, 3);
+        return tex;
+      },
+
+      init() {
+        if (typeof THREE === 'undefined') return;
+        const canvas = document.getElementById('three-world-canvas');
+        if (!canvas) return;
+
+        try {
+          // Deteksi perangkat HP / spesifikasi hemat daya agar tetap 60fps ultra ringan
+          const cores = navigator.hardwareConcurrency || 4;
+          const isMobileScreen = window.innerWidth < 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+          this.isLowPower = isMobileScreen || cores <= 4;
+
+          this.scene = new THREE.Scene();
+          this.scene.fog = new THREE.FogExp2(0xc7ecff, 0.017);
+
+          this.camera = new THREE.PerspectiveCamera(44, window.innerWidth / Math.max(1, window.innerHeight), 0.1, 140);
+          this.orbit.lookAt = new THREE.Vector3(0, 0.7, 0);
+          this.orbit.targetLookAt = new THREE.Vector3(0, 0.7, 0);
+
+          this.renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: !this.isLowPower,
+            alpha: true,
+            powerPreference: 'default'
+          });
+          this.renderer.setSize(window.innerWidth, window.innerHeight);
+          this.renderer.setPixelRatio(this.isLowPower ? Math.min(window.devicePixelRatio || 1, 1.15) : Math.min(window.devicePixelRatio || 1, 1.5));
+          this.renderer.shadowMap.enabled = !this.isLowPower;
+          if (!this.isLowPower) {
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          }
+          this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          this.renderer.toneMappingExposure = 1.12;
+          this.renderer.outputEncoding = THREE.sRGBEncoding;
+
+          // Tangani hilangnya konteks WebGL secara aman tanpa error berulang
+          canvas.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            this.contextLost = true;
+            this.setPaused(true);
+          }, false);
+          canvas.addEventListener('webglcontextrestored', () => {
+            this.contextLost = false;
+            if (document.getElementById('entry-splash')?.classList.contains('hidden')) {
+              this.setPaused(false);
+            }
+          }, false);
+
+          this.clock = new THREE.Clock();
+          this.raycaster = new THREE.Raycaster();
+          this.pointer = new THREE.Vector2();
+          this.sharedBurstGeo = new THREE.OctahedronGeometry(0.16, 0);
+
+          this.setupLights();
+          this.buildIsland();
+          this.buildWaterHalo();
+          this.buildLandmarks();
+          this.buildKiko3D();
+          this.buildCloudsAndFireflies();
+          this.bindControls(canvas);
+          this.applyLightingMood(state.lightingMood);
+          this.onResize();
+
+          window.addEventListener('resize', () => this.onResize());
+          window.addEventListener('orientationchange', () => setTimeout(() => this.onResize(), 180));
+          document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+              this.setPaused(true);
+            } else if (!document.getElementById('entry-splash') || document.getElementById('entry-splash').classList.contains('hidden')) {
+              this.setPaused(false);
+            }
+          });
+
+          // Render 1 frame awal ringan di belakang halaman masuk tanpa membebani CPU/baterai
+          this.renderOnce();
+        } catch (err) {
+          console.warn('WebGL 3D fallback:', err);
+        }
+      },
+
+      setPaused(isPaused) {
+        this.paused = isPaused;
+        if (!isPaused && !this.rafId && this.renderer) {
+          if (this.clock) this.clock.getDelta();
+          this.animate();
+        }
+      },
+
+      renderOnce() {
+        if (!this.renderer || !this.scene || !this.camera || this.contextLost) return;
+        const r = this.getAdaptiveDistance();
+        this.camera.position.set(
+          this.orbit.lookAt.x + r * Math.sin(this.orbit.yaw) * Math.cos(this.orbit.pitch),
+          this.orbit.lookAt.y + r * Math.sin(this.orbit.pitch) + 0.8,
+          this.orbit.lookAt.z + r * Math.cos(this.orbit.yaw) * Math.cos(this.orbit.pitch)
+        );
+        this.camera.lookAt(this.orbit.lookAt);
+        this.renderer.render(this.scene, this.camera);
+      },
+
+      getAdaptiveDistance() {
+        const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+        // Pada layar HP potret (sempit), kamera sedikit mundur otomatis agar seluruh pulau & 4 menara pas di layar
+        const portraitBoost = aspect < 0.85 ? (0.85 - aspect) * 9.5 : 0;
+        return this.orbit.distance + portraitBoost;
+      },
+
+      setupLights() {
+        const hemi = new THREE.HemisphereLight(0xdff4ff, 0x38764b, 0.95);
+        this.scene.add(hemi);
+
+        const sun = new THREE.DirectionalLight(0xfff5db, 1.55);
+        sun.position.set(14, 22, 12);
+        if (!this.isLowPower) {
+          sun.castShadow = true;
+          sun.shadow.mapSize.width = 512;
+          sun.shadow.mapSize.height = 512;
+          sun.shadow.camera.near = 2;
+          sun.shadow.camera.far = 50;
+          const d = 13;
+          sun.shadow.camera.left = -d;
+          sun.shadow.camera.right = d;
+          sun.shadow.camera.top = d;
+          sun.shadow.camera.bottom = -d;
+          sun.shadow.bias = -0.0005;
+        }
+        this.scene.add(sun);
+
+        // Rim light untuk siluet 3D sinematik
+        const rim = new THREE.DirectionalLight(0x60a5fa, 0.55);
+        rim.position.set(-15, 8, -14);
+        this.scene.add(rim);
+
+        // Lampu hangat pulau (bersinar indah saat Senja/Malam)
+        const islandGlow = new THREE.PointLight(0xfbbf24, 0.35, 18);
+        islandGlow.position.set(0, 2.8, 0);
+        this.scene.add(islandGlow);
+
+        this.lights = { hemi, sun, rim, islandGlow };
+      },
+
+      buildIsland() {
+        this.islandGroup = new THREE.Group();
+        this.scene.add(this.islandGroup);
+
+        // 1. Batu Tebing Bawah Pulau (Low-Poly Terpahat Ultra Ringan)
+        const rockGeo = new THREE.ConeGeometry(6.6, 7.2, 11, 3);
+        const pos = rockGeo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const y = pos.getY(i);
+          if (y < 3.2) {
+            const jitter = 0.85 + Math.sin(pos.getX(i) * 1.4 + pos.getZ(i) * 1.1) * 0.16;
+            pos.setX(i, pos.getX(i) * jitter);
+            pos.setZ(i, pos.getZ(i) * jitter);
+          }
+        }
+        rockGeo.computeVertexNormals();
+        const rockMat = new THREE.MeshStandardMaterial({
+          color: 0x8b6f56,
+          roughness: 0.9,
+          metalness: 0.05,
+          flatShading: true
+        });
+        const rockMesh = new THREE.Mesh(rockGeo, rockMat);
+        rockMesh.rotation.x = Math.PI;
+        rockMesh.position.y = -3.65;
+        rockMesh.castShadow = !this.isLowPower;
+        rockMesh.receiveShadow = !this.isLowPower;
+        this.islandGroup.add(rockMesh);
+
+        // 2. Hamparan Rumput Atas Pulau (PBR Bertekstur Halus)
+        const grassGeo = new THREE.CylinderGeometry(6.75, 6.45, 0.95, 18);
+        const grassMat = new THREE.MeshStandardMaterial({
+          map: this.makeGrassTexture(),
+          color: 0x4ade80,
+          roughness: 0.78,
+          metalness: 0.04
+        });
+        const grassTop = new THREE.Mesh(grassGeo, grassMat);
+        grassTop.position.y = -0.15;
+        grassTop.receiveShadow = !this.isLowPower;
+        this.islandGroup.add(grassTop);
+
+        // 3. Bukit Tengah & Jalan Setapak Pasir Keemasan
+        const hillMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.82 });
+        const hill = new THREE.Mesh(new THREE.SphereGeometry(3.2, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.5), hillMat);
+        hill.scale.set(1.2, 0.42, 1.1);
+        hill.position.set(0, 0.25, -0.4);
+        hill.receiveShadow = !this.isLowPower;
+        this.islandGroup.add(hill);
+
+        // Jalan batu melingkar (geometri bersama agar hemat memori)
+        const pathMat = new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.88 });
+        const stoneGeo = new THREE.CylinderGeometry(0.42, 0.46, 0.12, 7);
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          const stone = new THREE.Mesh(stoneGeo, pathMat);
+          stone.position.set(Math.cos(a) * 3.85, 0.34, Math.sin(a) * 3.85);
+          this.islandGroup.add(stone);
+        }
+
+        // 4. Kolam Kristal & Air Terjun Bercahaya (StandardMaterial ringan)
+        const pondMat = new THREE.MeshStandardMaterial({
+          color: 0x38bdf8,
+          emissive: 0x0284c7,
+          emissiveIntensity: 0.25,
+          roughness: 0.15,
+          metalness: 0.2,
+          transparent: true,
+          opacity: 0.88
+        });
+        const pond = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.16, 14), pondMat);
+        pond.position.set(0, 0.34, 4.65);
+        this.islandGroup.add(pond);
+
+        const waterfall = new THREE.Mesh(new THREE.BoxGeometry(1.15, 5.2, 0.25), pondMat);
+        waterfall.position.set(0, -2.35, 6.25);
+        waterfall.rotation.x = 0.08;
+        this.islandGroup.add(waterfall);
+
+        // 5. Pohon-Pohon Tropis & Cemara Bergoyang (Shared Geometry)
+        const treeCoords = [
+          [-4.8, 0.32, -2.2, 1.0],
+          [-2.2, 0.35, -4.9, 1.15],
+          [4.6, 0.32, -2.5, 0.95],
+          [2.4, 0.35, -4.7, 1.05],
+          [-5.1, 0.32, 2.0, 0.85],
+          [5.0, 0.32, 2.2, 0.9],
+          [0.0, 1.38, -2.4, 1.25]
+        ];
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.9 });
+        const trunkGeo = new THREE.CylinderGeometry(0.14, 0.22, 1.2, 6);
+        const crown1Geo = new THREE.DodecahedronGeometry(0.75, 0);
+        const crown2Geo = new THREE.DodecahedronGeometry(0.52, 0);
+        const leafMats = [0x16a34a, 0x22c55e, 0x15803d, 0x10b981].map(c =>
+          new THREE.MeshStandardMaterial({ color: c, roughness: 0.72, flatShading: true })
+        );
+
+        treeCoords.forEach(([x, y, z, s], idx) => {
+          const tree = new THREE.Group();
+          tree.position.set(x, y, z);
+          tree.scale.setScalar(s);
+          const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+          trunk.position.y = 0.6;
+          trunk.castShadow = !this.isLowPower;
+          tree.add(trunk);
+
+          const leafMat = leafMats[idx % leafMats.length];
+          const crown1 = new THREE.Mesh(crown1Geo, leafMat);
+          crown1.position.y = 1.45;
+          crown1.castShadow = !this.isLowPower;
+          tree.add(crown1);
+
+          const crown2 = new THREE.Mesh(crown2Geo, leafMat);
+          crown2.position.set(0.25, 1.95, -0.1);
+          tree.add(crown2);
+
+          tree.userData = { phase: idx * 1.1 };
+          this.trees.push(tree);
+          this.islandGroup.add(tree);
+        });
+
+        // 6. Batu Melayang Kecil di Sekeliling Pulau
+        const miniRockGeo = new THREE.DodecahedronGeometry(0.5, 0);
+        for (let i = 0; i < 5; i++) {
+          const a = (i / 5) * Math.PI * 2 + 0.5;
+          const mini = new THREE.Mesh(miniRockGeo, rockMat);
+          mini.scale.setScalar(0.85 + (i % 3) * 0.25);
+          mini.position.set(Math.cos(a) * (8.6 + (i % 2) * 1.2), -1.8 + (i % 3) * 0.7, Math.sin(a) * (8.6 + (i % 2) * 1.2));
+          this.islandGroup.add(mini);
+        }
+      },
+
+      buildWaterHalo() {
+        // Cincin Lautan Kristal Ultra Ringan (tanpa update vertex CPU per-frame)
+        const geo = new THREE.RingGeometry(4.2, 23, 28, 1);
+        geo.rotateX(-Math.PI / 2);
+        const mat = new THREE.MeshStandardMaterial({
+          color: 0x0ea5e9,
+          emissive: 0x0369a1,
+          emissiveIntensity: 0.16,
+          roughness: 0.24,
+          metalness: 0.3,
+          transparent: true,
+          opacity: 0.72,
+          side: THREE.DoubleSide
+        });
+        this.waterMesh = new THREE.Mesh(geo, mat);
+        this.waterMesh.position.y = -5.6;
+        this.scene.add(this.waterMesh);
+      },
+
+      buildLandmarks() {
+        // 4 Menara Landmark 3D yang bisa diklik langsung di pulau!
+        const specs = [
+          { view: 'flashcard', label: '🃏 Tahap 1: Kartu Ajaib 3D', pos: [-3.4, 0.42, 1.8], color: 0x38bdf8, accent: 0x1d4ed8 },
+          { view: 'audio',     label: '👂 Tahap 2: Telinga Super',    pos: [3.4, 0.42, 1.8],  color: 0x34d399, accent: 0x047857 },
+          { view: 'memory',    label: '🧩 Tahap 3: Cocokkan Pasangan',pos: [-3.1, 0.45, -2.5],color: 0xa78bfa, accent: 0x6d28d9 },
+          { view: 'mission',   label: '🚀 Tahap 4: Misi Bintang Bos', pos: [3.1, 0.45, -2.5], color: 0xfbbf24, accent: 0xd97706 }
+        ];
+
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.45, metalness: 0.1 });
+        const baseGeo = new THREE.CylinderGeometry(0.95, 1.15, 0.4, 10);
+        const ringGeo = new THREE.TorusGeometry(0.92, 0.08, 8, 18);
+        const hitGeo = new THREE.CylinderGeometry(1.3, 1.3, 2.7, 8);
+        const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+
+        specs.forEach((sp, idx) => {
+          const group = new THREE.Group();
+          group.position.set(sp.pos[0], sp.pos[1], sp.pos[2]);
+
+          const base = new THREE.Mesh(baseGeo, baseMat);
+          base.position.y = 0.2;
+          base.castShadow = !this.isLowPower;
+          group.add(base);
+
+          const ringMat = new THREE.MeshStandardMaterial({
+            color: sp.color,
+            emissive: sp.color,
+            emissiveIntensity: 0.55,
+            roughness: 0.25,
+            metalness: 0.4
+          });
+          const ring = new THREE.Mesh(ringGeo, ringMat);
+          ring.rotation.x = Math.PI / 2;
+          ring.position.y = 0.42;
+          group.add(ring);
+
+          const iconMat = new THREE.MeshStandardMaterial({
+            color: sp.color,
+            emissive: sp.accent,
+            emissiveIntensity: 0.3,
+            roughness: 0.22,
+            metalness: 0.5
+          });
+          let iconMesh;
+          if (sp.view === 'flashcard') {
+            iconMesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.25, 0.16), iconMat);
+          } else if (sp.view === 'audio') {
+            iconMesh = new THREE.Mesh(new THREE.TorusKnotGeometry(0.45, 0.15, 28, 6), iconMat);
+          } else if (sp.view === 'memory') {
+            iconMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.68, 0), iconMat);
+          } else {
+            iconMesh = new THREE.Mesh(new THREE.ConeGeometry(0.58, 1.35, 6), iconMat);
+          }
+          iconMesh.position.y = 1.55;
+          iconMesh.castShadow = !this.isLowPower;
+          group.add(iconMesh);
+
+          const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+          hitMesh.position.y = 1.3;
+          hitMesh.userData = { landmarkIndex: idx };
+          group.add(hitMesh);
+
+          this.landmarks.push({
+            view: sp.view,
+            label: sp.label,
+            group,
+            iconMesh,
+            ring,
+            hitMesh,
+            baseY: sp.pos[1],
+            phase: idx * 1.4
+          });
+          this.islandGroup.add(group);
+        });
+      },
+
+      buildKiko3D() {
+        // Maskot Burung Hantu "Kiko 3D" di Puncak Tengah Pulau
+        const g = new THREE.Group();
+        g.position.set(0, 1.65, 0.2);
+
+        const blueMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.42, metalness: 0.08 });
+        const darkBlueMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.48 });
+        const bellyMat = new THREE.MeshStandardMaterial({ color: 0xe0f2fe, roughness: 0.5 });
+        const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+        const pupilMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.15, metalness: 0.3 });
+        const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.35 });
+
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.82, 16, 14), blueMat);
+        body.scale.set(1, 1.08, 0.94);
+        body.castShadow = !this.isLowPower;
+        g.add(body);
+
+        const belly = new THREE.Mesh(new THREE.SphereGeometry(0.56, 12, 10), bellyMat);
+        belly.position.set(0, -0.14, 0.46);
+        belly.scale.set(0.95, 1.0, 0.55);
+        g.add(belly);
+
+        const earL = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.52, 6), darkBlueMat);
+        earL.position.set(-0.46, 0.8, 0.05);
+        earL.rotation.z = 0.32;
+        g.add(earL);
+
+        const earR = earL.clone();
+        earR.position.x = 0.46;
+        earR.rotation.z = -0.32;
+        g.add(earR);
+
+        const crown = new THREE.Mesh(new THREE.OctahedronGeometry(0.18, 0), goldMat);
+        crown.position.set(0, 1.05, 0.1);
+        g.add(crown);
+
+        const eyeWhiteGeo = new THREE.SphereGeometry(0.24, 10, 10);
+        const pupilGeo = new THREE.SphereGeometry(0.11, 8, 8);
+        [-0.28, 0.28].forEach(ex => {
+          const eyeWhite = new THREE.Mesh(eyeWhiteGeo, whiteMat);
+          eyeWhite.position.set(ex, 0.26, 0.66);
+          eyeWhite.scale.set(1, 1, 0.55);
+          g.add(eyeWhite);
+
+          const pupil = new THREE.Mesh(pupilGeo, pupilMat);
+          pupil.position.set(ex, 0.26, 0.78);
+          g.add(pupil);
+        });
+
+        const beak = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.34, 6), goldMat);
+        beak.rotation.x = Math.PI / 2;
+        beak.position.set(0, 0.06, 0.85);
+        g.add(beak);
+
+        const wingL = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 8), darkBlueMat);
+        wingL.scale.set(0.35, 0.95, 0.65);
+        wingL.position.set(-0.82, 0.0, 0.0);
+        wingL.rotation.z = 0.28;
+        g.add(wingL);
+
+        const wingR = wingL.clone();
+        wingR.position.x = 0.82;
+        wingR.rotation.z = -0.28;
+        g.add(wingR);
+
+        this.kikoGroup = g;
+        this.kikoParts = { wingL, wingR, crown };
+        this.islandGroup.add(g);
+      },
+
+      buildCloudsAndFireflies() {
+        // Awan 3D Lembut Melayang (Shared Geometry)
+        const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92, metalness: 0.02 });
+        const puffGeo = new THREE.SphereGeometry(0.9, 10, 8);
+        const cloudCount = this.isLowPower ? 4 : 6;
+        for (let i = 0; i < cloudCount; i++) {
+          const cg = new THREE.Group();
+          for (let p = 0; p < 3; p++) {
+            const puff = new THREE.Mesh(puffGeo, cloudMat);
+            puff.scale.setScalar(p === 1 ? 1.25 : 0.92);
+            puff.position.set((p - 1) * 0.95, p === 1 ? 0.25 : 0, (p % 2) * 0.22);
+            cg.add(puff);
+          }
+          const a = (i / cloudCount) * Math.PI * 2;
+          const dist = 12 + (i % 3) * 3.2;
+          cg.position.set(Math.cos(a) * dist, 5.2 + (i % 3) * 1.4, Math.sin(a) * dist);
+          cg.userData = { angle: a, dist, speed: 0.035 + (i % 3) * 0.012, baseY: cg.position.y };
+          this.clouds.push(cg);
+          this.scene.add(cg);
+        }
+
+        // Partikel Kunang-Kunang / Debu Ajaib berbasis Mesh Ultra Ringan
+        // (Menghindari PointsMaterial agar 100% bebas error shader WebGL di semua GPU/browser)
+        const count = this.isLowPower ? 20 : 32;
+        const fGroup = new THREE.Group();
+        const fGeo = new THREE.OctahedronGeometry(0.11, 0);
+        const fMat = new THREE.MeshBasicMaterial({
+          color: 0xfde047,
+          transparent: true,
+          opacity: 0.9
+        });
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const r = 2.4 + Math.random() * 9.5;
+          const spark = new THREE.Mesh(fGeo, fMat);
+          spark.position.set(
+            Math.cos(a) * r,
+            Math.random() * 7.2 - 0.8,
+            Math.sin(a) * r
+          );
+          spark.scale.setScalar(0.65 + Math.random() * 0.75);
+          fGroup.add(spark);
+        }
+        this.fireflies = fGroup;
+        this.scene.add(this.fireflies);
+      },
+
+      spawnBurst(colorHex = 0xfbbf24, count = 20) {
+        if (!this.scene || this.paused) return;
+        const capped = this.isLowPower ? Math.min(count, 12) : Math.min(count, 24);
+        const mat = new THREE.MeshStandardMaterial({
+          color: colorHex,
+          emissive: colorHex,
+          emissiveIntensity: 0.85,
+          roughness: 0.2
+        });
+        const origin = this.kikoGroup ? this.kikoGroup.position.clone() : new THREE.Vector3(0, 2, 0);
+        for (let i = 0; i < capped; i++) {
+          const m = new THREE.Mesh(this.sharedBurstGeo, mat);
+          m.position.copy(origin);
+          m.position.y += 0.6;
+          const a = Math.random() * Math.PI * 2;
+          const spd = 0.06 + Math.random() * 0.14;
+          m.userData = {
+            vx: Math.cos(a) * spd,
+            vy: 0.11 + Math.random() * 0.14,
+            vz: Math.sin(a) * spd,
+            life: 52 + Math.random() * 20
+          };
+          this.burstParticles.push(m);
+          this.scene.add(m);
+        }
+      },
+
+      react(mood) {
+        this.kikoAnim.mood = mood;
+        this.kikoAnim.timer = 1.25;
+        if (mood === 'happy') {
+          this.spawnBurst(0xfbbf24, 24);
+        } else if (mood === 'encourage') {
+          this.spawnBurst(0x38bdf8, 10);
+        }
+      },
+
+      applyLightingMood(mood) {
+        document.body.classList.remove('mood-day', 'mood-sunset', 'mood-night');
+        document.body.classList.add('mood-' + mood);
+        if (!this.scene || !this.lights.sun) return;
+
+        if (mood === 'day') {
+          this.scene.fog.color.setHex(0xc7ecff);
+          this.lights.hemi.color.setHex(0xdff4ff);
+          this.lights.hemi.groundColor.setHex(0x38764b);
+          this.lights.hemi.intensity = 0.98;
+          this.lights.sun.color.setHex(0xfff5db);
+          this.lights.sun.intensity = 1.55;
+          this.lights.sun.position.set(14, 22, 12);
+          this.lights.islandGlow.intensity = 0.35;
+          if (this.waterMesh) this.waterMesh.material.color.setHex(0x0ea5e9);
+        } else if (mood === 'sunset') {
+          this.scene.fog.color.setHex(0xfdba74);
+          this.lights.hemi.color.setHex(0xfecdd3);
+          this.lights.hemi.groundColor.setHex(0x4c1d95);
+          this.lights.hemi.intensity = 0.85;
+          this.lights.sun.color.setHex(0xfb923c);
+          this.lights.sun.intensity = 1.75;
+          this.lights.sun.position.set(-18, 7, 10);
+          this.lights.islandGlow.intensity = 1.2;
+          if (this.waterMesh) this.waterMesh.material.color.setHex(0x6366f1);
+        } else {
+          this.scene.fog.color.setHex(0x0f172a);
+          this.lights.hemi.color.setHex(0x60a5fa);
+          this.lights.hemi.groundColor.setHex(0x0f172a);
+          this.lights.hemi.intensity = 0.6;
+          this.lights.sun.color.setHex(0xbfdbfe);
+          this.lights.sun.intensity = 0.8;
+          this.lights.sun.position.set(-10, 18, -12);
+          this.lights.islandGlow.intensity = 2.1;
+          if (this.waterMesh) this.waterMesh.material.color.setHex(0x1d4ed8);
+        }
+      },
+
+      focusView(view) {
+        if (!this.orbit.targetLookAt) return;
+        // Sudut kamera sinematik khusus untuk setiap mode permainan
+        if (view === 'home') {
+          this.orbit.targetDistance = 15.2;
+          this.orbit.targetPitch = 0.30;
+          this.orbit.targetLookAt.set(0, 0.65, 0);
+        } else if (view === 'flashcard') {
+          this.orbit.targetYaw = -0.65;
+          this.orbit.targetPitch = 0.25;
+          this.orbit.targetDistance = 11.8;
+          this.orbit.targetLookAt.set(-2.2, 1.1, 1.2);
+        } else if (view === 'audio') {
+          this.orbit.targetYaw = 0.65;
+          this.orbit.targetPitch = 0.26;
+          this.orbit.targetDistance = 11.8;
+          this.orbit.targetLookAt.set(2.2, 1.1, 1.2);
+        } else if (view === 'memory') {
+          this.orbit.targetYaw = -2.25;
+          this.orbit.targetPitch = 0.34;
+          this.orbit.targetDistance = 12.2;
+          this.orbit.targetLookAt.set(-2.0, 1.1, -1.6);
+        } else if (view === 'mission') {
+          this.orbit.targetYaw = 2.25;
+          this.orbit.targetPitch = 0.28;
+          this.orbit.targetDistance = 11.4;
+          this.orbit.targetLookAt.set(2.0, 1.2, -1.6);
+        }
+      },
+
+      bindControls(canvas) {
+        const startDrag = (clientX, clientY) => {
+          this.orbit.dragging = true;
+          this.orbit.moved = false;
+          this.orbit.downX = clientX;
+          this.orbit.downY = clientY;
+        };
+
+        const moveDrag = (clientX, clientY) => {
+          this.updateRaycast(clientX, clientY);
+          if (!this.orbit.dragging) return;
+          const dx = clientX - this.orbit.downX;
+          const dy = clientY - this.orbit.downY;
+          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) this.orbit.moved = true;
+          this.orbit.downX = clientX;
+          this.orbit.downY = clientY;
+          this.orbit.targetYaw -= dx * 0.0075;
+          this.orbit.targetPitch = Math.max(0.08, Math.min(0.88, this.orbit.targetPitch + dy * 0.006));
+        };
+
+        const endDrag = (clientX, clientY) => {
+          if (!this.orbit.dragging) return;
+          this.orbit.dragging = false;
+          if (!this.orbit.moved && clientX !== undefined) {
+            const hit = this.pickLandmark(clientX, clientY);
+            if (hit) {
+              if (state.explore3D) toggleExplore3D(false);
+              this.spawnBurst(0x38bdf8, 22);
+              navigateTo(hit.view);
+            }
+          }
+        };
+
+        // Mouse Events (wajib untuk rotasi kamera 3D)
+        canvas.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+        window.addEventListener('mouseup', e => endDrag(e.clientX, e.clientY));
+
+        // Zoom roda mouse halus saat di Beranda / Mode Jelajah 3D
+        canvas.addEventListener('wheel', e => {
+          if (state.currentView !== 'home' && !state.explore3D) return;
+          this.orbit.targetDistance = Math.max(9.5, Math.min(22, this.orbit.targetDistance + e.deltaY * 0.008));
+        }, { passive: true });
+
+        // Touch Events (HP & Tablet)
+        canvas.addEventListener('touchstart', e => {
+          if (e.touches.length === 1) startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+        canvas.addEventListener('touchmove', e => {
+          if (e.touches.length === 1) moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+        canvas.addEventListener('touchend', e => {
+          const t = e.changedTouches?.[0];
+          endDrag(t?.clientX, t?.clientY);
+        }, { passive: true });
+      },
+
+      // Sambungkan jendela 3D transparan di Beranda agar mudah digeser & diklik di HP
+      attachStageProxy(el) {
+        if (!el || el.dataset.bound3d) return;
+        el.dataset.bound3d = '1';
+        let lx = 0, ly = 0, moved = false, active = false;
+
+        el.addEventListener('pointerdown', e => {
+          active = true;
+          moved = false;
+          lx = e.clientX;
+          ly = e.clientY;
+          el.setPointerCapture?.(e.pointerId);
+        });
+        el.addEventListener('pointermove', e => {
+          this.updateRaycast(e.clientX, e.clientY);
+          if (!active) return;
+          const dx = e.clientX - lx;
+          const dy = e.clientY - ly;
+          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+          lx = e.clientX;
+          ly = e.clientY;
+          this.orbit.targetYaw -= dx * 0.008;
+          this.orbit.targetPitch = Math.max(0.08, Math.min(0.88, this.orbit.targetPitch + dy * 0.006));
+        });
+        el.addEventListener('pointerup', e => {
+          if (!active) return;
+          active = false;
+          if (!moved) {
+            const hit = this.pickLandmark(e.clientX, e.clientY);
+            if (hit) {
+              this.spawnBurst(0xfbbf24, 24);
+              navigateTo(hit.view);
+            } else {
+              // Ketuk Kiko / Pulau untuk efek interaksi ceria!
+              SFX.pop();
+              this.react('happy');
+              setMascot('happy', 'Hihi! Kamu menyentuh Pulau Kata 3D! Klik salah satu menara bercahaya untuk bermain! ✨');
+            }
+          }
+        });
+        el.addEventListener('pointerleave', () => {
+          const tip = document.getElementById('landmark-tooltip');
+          if (tip) tip.classList.add('hidden');
+        });
+      },
+
+      pickLandmark(clientX, clientY) {
+        if (!this.raycaster || !this.camera || this.landmarks.length === 0) return null;
+        this.pointer.x = (clientX / window.innerWidth) * 2 - 1;
+        this.pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+        this.raycaster.setFromCamera(this.pointer, this.camera);
+        const hits = this.raycaster.intersectObjects(this.landmarks.map(l => l.hitMesh));
+        if (hits.length > 0) {
+          const idx = hits[0].object.userData.landmarkIndex;
+          return this.landmarks[idx] || null;
+        }
+        return null;
+      },
+
+      updateRaycast(clientX, clientY) {
+        const hit = this.pickLandmark(clientX, clientY);
+        this.hoveredLandmark = hit;
+        const tip = document.getElementById('landmark-tooltip');
+        if (!tip) return;
+        if (hit && (state.currentView === 'home' || state.explore3D)) {
+          tip.textContent = hit.label + ' — Klik untuk main!';
+          tip.style.left = clientX + 'px';
+          tip.style.top = (clientY - 14) + 'px';
+          tip.classList.remove('hidden');
+        } else {
+          tip.classList.add('hidden');
+        }
+      },
+
+      onResize() {
+        if (!this.camera || !this.renderer) return;
+        const w = window.innerWidth;
+        const h = Math.max(1, window.innerHeight);
+        const aspect = w / h;
+        this.camera.aspect = aspect;
+        this.camera.fov = aspect < 0.85 ? 50 : 44;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h);
+        if (this.paused) this.renderOnce();
+      },
+
+      animate() {
+        if (this.paused || this.contextLost) {
+          this.rafId = null;
+          return;
+        }
+        this.rafId = requestAnimationFrame(() => this.animate());
+        if (!this.renderer || !this.scene || !this.camera) return;
+
+        const dt = Math.min(this.clock.getDelta(), 0.05);
+        const t = this.clock.elapsedTime;
+
+        // Rotasi lembut otomatis saat tidak sedang di-drag di Beranda
+        if (!this.orbit.dragging && state.currentView === 'home' && !this.hoveredLandmark) {
+          this.orbit.targetYaw += dt * 0.11;
+        }
+
+        // Interpolasi kamera halus (Studio Damping) + adaptasi rasio layar otomatis
+        this.orbit.yaw += (this.orbit.targetYaw - this.orbit.yaw) * 0.08;
+        this.orbit.pitch += (this.orbit.targetPitch - this.orbit.pitch) * 0.08;
+        this.orbit.distance += (this.orbit.targetDistance - this.orbit.distance) * 0.08;
+        this.orbit.lookAt.lerp(this.orbit.targetLookAt, 0.08);
+
+        const r = this.getAdaptiveDistance();
+        this.camera.position.set(
+          this.orbit.lookAt.x + r * Math.sin(this.orbit.yaw) * Math.cos(this.orbit.pitch),
+          this.orbit.lookAt.y + r * Math.sin(this.orbit.pitch) + 0.8,
+          this.orbit.lookAt.z + r * Math.cos(this.orbit.yaw) * Math.cos(this.orbit.pitch)
+        );
+        this.camera.lookAt(this.orbit.lookAt);
+
+        // Pulau melayang lembut
+        if (this.islandGroup) {
+          this.islandGroup.position.y = Math.sin(t * 1.1) * 0.18;
+        }
+
+        // Gelombang air lautan ultra ringan (rotasi & naik-turun tanpa loop vertex CPU)
+        if (this.waterMesh) {
+          this.waterMesh.position.y = -5.6 + Math.sin(t * 1.5) * 0.16;
+          this.waterMesh.rotation.z = t * 0.04;
+        }
+
+        // Pohon bergoyang tertiup angin
+        this.trees.forEach(tr => {
+          tr.rotation.z = Math.sin(t * 1.8 + tr.userData.phase) * 0.045;
+        });
+
+        // Awan mengorbit perlahan
+        this.clouds.forEach(cg => {
+          cg.userData.angle += dt * cg.userData.speed;
+          cg.position.x = Math.cos(cg.userData.angle) * cg.userData.dist;
+          cg.position.z = Math.sin(cg.userData.angle) * cg.userData.dist;
+          cg.position.y = cg.userData.baseY + Math.sin(t + cg.userData.angle) * 0.25;
+        });
+
+        // Kunang-kunang ajaib naik turun
+        if (this.fireflies) {
+          this.fireflies.rotation.y = t * 0.07;
+          this.fireflies.position.y = Math.sin(t * 0.9) * 0.35;
+        }
+
+        // Animasi 4 Landmark 3D (melayang + membesar saat di-hover)
+        this.landmarks.forEach(lm => {
+          const isHover = this.hoveredLandmark === lm;
+          lm.iconMesh.rotation.y += dt * (isHover ? 2.8 : 1.0);
+          lm.iconMesh.position.y = 1.55 + Math.sin(t * 2.4 + lm.phase) * 0.18 + (isHover ? 0.28 : 0);
+          const targetScale = isHover ? 1.24 : 1.0;
+          lm.iconMesh.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.15);
+          lm.ring.material.emissiveIntensity = isHover ? 1.15 : 0.45 + Math.sin(t * 3 + lm.phase) * 0.18;
+        });
+
+        // Animasi Maskot Kiko 3D
+        if (this.kikoGroup) {
+          if (this.kikoAnim.timer > 0) this.kikoAnim.timer -= dt;
+          const talkingBoost = state.isSpeaking ? Math.abs(Math.sin(t * 14)) * 0.22 : 0;
+
+          if (this.kikoAnim.timer > 0 && this.kikoAnim.mood === 'happy') {
+            this.kikoGroup.position.y = 1.65 + Math.abs(Math.sin(t * 11)) * 0.95;
+            this.kikoGroup.rotation.y += dt * 7.5;
+            this.kikoParts.wingL.rotation.z = 0.28 + Math.sin(t * 22) * 0.55;
+            this.kikoParts.wingR.rotation.z = -0.28 - Math.sin(t * 22) * 0.55;
+          } else if (this.kikoAnim.timer > 0 && this.kikoAnim.mood === 'encourage') {
+            this.kikoGroup.position.y = 1.65 + Math.sin(t * 5) * 0.12;
+            this.kikoGroup.rotation.z = Math.sin(t * 12) * 0.16;
+          } else {
+            this.kikoGroup.position.y = 1.65 + Math.sin(t * 2.6) * 0.14 + talkingBoost;
+            this.kikoGroup.rotation.z *= 0.9;
+            // Kiko menghadap perlahan ke arah kamera
+            const desiredRot = Math.atan2(this.camera.position.x, this.camera.position.z);
+            this.kikoGroup.rotation.y += (desiredRot - this.kikoGroup.rotation.y) * 0.04;
+            this.kikoParts.wingL.rotation.z = 0.28 + Math.sin(t * 4) * 0.12 + talkingBoost;
+            this.kikoParts.wingR.rotation.z = -0.28 - Math.sin(t * 4) * 0.12 - talkingBoost;
+          }
+          if (this.kikoParts.crown) {
+            this.kikoParts.crown.rotation.y += dt * 2.2;
+          }
+        }
+
+        // Update Partikel Bintang 3D
+        for (let i = this.burstParticles.length - 1; i >= 0; i--) {
+          const p = this.burstParticles[i];
+          p.position.x += p.userData.vx;
+          p.position.y += p.userData.vy;
+          p.position.z += p.userData.vz;
+          p.userData.vy -= 0.0045;
+          p.rotation.x += 0.12;
+          p.rotation.y += 0.15;
+          p.userData.life--;
+          const sc = Math.max(0.01, p.userData.life / 65);
+          p.scale.setScalar(sc);
+          if (p.userData.life <= 0) {
+            this.scene.remove(p);
+            this.burstParticles.splice(i, 1);
+          }
+        }
+
+        this.renderer.render(this.scene, this.camera);
+      }
+    };
+
+    /* =========================================================================
+       5. MESIN PENGUCAPAN DUAL-BAHASA (WEB SPEECH API: INGGRIS & ARAB)
+       ========================================================================= */
+    const SpeechEngine = {
+      voices: [],
+      enVoice: null,
+      arVoice: null,
+      seqToken: 0,
+      hasCheckedArabic: false,
+      arabicAvailable: true,
+
+      setSpeakingUI(active) {
+        state.isSpeaking = active;
+        document.querySelectorAll('.audio-eq').forEach(el => {
+          el.classList.toggle('eq-active', active);
+        });
+      },
+
+      init() {
+        if (!('speechSynthesis' in window)) return;
+        const load = () => {
+          this.voices = window.speechSynthesis.getVoices() || [];
+          if (this.voices.length === 0) return;
+
+          this.enVoice =
+            this.voices.find(v => /en[-_]US/i.test(v.lang) && /Google|Samantha|Natural|Microsoft/i.test(v.name)) ||
+            this.voices.find(v => /en[-_]US/i.test(v.lang)) ||
+            this.voices.find(v => /en[-_]GB/i.test(v.lang)) ||
+            this.voices.find(v => /^en/i.test(v.lang)) ||
+            null;
+
+          this.arVoice =
+            this.voices.find(v => /ar[-_]SA/i.test(v.lang)) ||
+            this.voices.find(v => /^ar/i.test(v.lang)) ||
+            null;
+
+          this.hasCheckedArabic = true;
+          this.arabicAvailable = !!this.arVoice;
+
+          if (!this.arabicAvailable && !state.voiceBannerDismissed) {
+            const banner = document.getElementById('arabic-voice-banner');
+            if (banner) banner.classList.remove('hidden');
+          } else {
+            const banner = document.getElementById('arabic-voice-banner');
+            if (banner) banner.classList.add('hidden');
+          }
+        };
+
+        load();
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+          window.speechSynthesis.onvoiceschanged = load;
+        }
+      },
+
+      stop() {
+        this.seqToken++;
+        this.setSpeakingUI(false);
+        if ('speechSynthesis' in window) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+        }
+      },
+
+      speak(text, lang = 'en', onEnd = null) {
+        SFX.unlock();
+        if (!('speechSynthesis' in window)) {
+          showToast("Browser ini belum mendukung fitur pembacaan suara.", "amber");
+          if (onEnd) onEnd();
+          return;
+        }
+        try {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.rate = state.snailMode ? 0.65 : 1.0;
+          utter.pitch = 1.04;
+
+          if (lang === 'ar') {
+            utter.lang = this.arVoice ? this.arVoice.lang : 'ar-SA';
+            if (this.arVoice) utter.voice = this.arVoice;
+            if (this.hasCheckedArabic && !this.arabicAvailable) {
+              showToast("Paket suara Arab belum terpasang di perangkat ini. Cek cara baca Latin ya!", "amber");
+            }
+          } else {
+            utter.lang = this.enVoice ? this.enVoice.lang : 'en-US';
+            if (this.enVoice) utter.voice = this.enVoice;
+          }
+
+          utter.onstart = () => this.setSpeakingUI(true);
+          utter.onend = () => {
+            this.setSpeakingUI(false);
+            if (onEnd) onEnd();
+          };
+          utter.onerror = () => {
+            this.setSpeakingUI(false);
+            if (onEnd) onEnd();
+          };
+          this.setSpeakingUI(true);
+          window.speechSynthesis.speak(utter);
+        } catch (e) {
+          this.setSpeakingUI(false);
+          if (onEnd) onEnd();
+        }
+      },
+
+      speakSequential(wordObj, onPhaseChange = null) {
+        this.stop();
+        const myToken = ++this.seqToken;
+        if (onPhaseChange) onPhaseChange('en');
+
+        this.speak(wordObj.enWord, 'en', () => {
+          if (myToken !== this.seqToken) return;
+          if (onPhaseChange) onPhaseChange('pause');
+          setTimeout(() => {
+            if (myToken !== this.seqToken) return;
+            if (onPhaseChange) onPhaseChange('ar');
+            this.speak(wordObj.arWord, 'ar', () => {
+              if (myToken !== this.seqToken) return;
+              if (onPhaseChange) onPhaseChange('idle');
+            });
+          }, 800);
+        });
+      }
+    };
+
+    // Buka kunci audio pada interaksi pertama sesuai kebijakan autoplay browser
+    document.addEventListener('pointerdown', () => SFX.unlock(), { once: true });
+
+    /* =========================================================================
+       6. CONFETTI CANVAS ENGINE (RINGAN & RESPONSIF)
+       ========================================================================= */
+    const Confetti = {
+      canvas: null,
+      ctx: null,
+      particles: [],
+      running: false,
+
+      init() {
+        this.canvas = document.getElementById('confetti-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      },
+
+      resize() {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      },
+
+      burst(count = 75) {
+        if (!this.canvas) this.init();
+        const colors = ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4'];
+        for (let i = 0; i < count; i++) {
+          this.particles.push({
+            x: window.innerWidth * (0.2 + Math.random() * 0.6),
+            y: window.innerHeight * 0.32,
+            vx: (Math.random() - 0.5) * 14,
+            vy: -Math.random() * 13 - 4,
+            size: Math.random() * 9 + 5,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rot: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 0.25,
+            gravity: 0.28 + Math.random() * 0.12,
+            life: 110 + Math.random() * 45
+          });
+        }
+        if (!this.running) {
+          this.running = true;
+          this.loop();
+        }
+      },
+
+      loop() {
+        if (!this.ctx) return;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.rot += p.vRot;
+          p.life--;
+
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate(p.rot);
+          this.ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 40));
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          this.ctx.restore();
+
+          if (p.life <= 0 || p.y > this.canvas.height + 40) {
+            this.particles.splice(i, 1);
+          }
+        }
+        if (this.particles.length > 0) {
+          requestAnimationFrame(() => this.loop());
+        } else {
+          this.running = false;
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+    };
+
+    /* =========================================================================
+       7. UTILITAS UMUM, GAMIFIKASI, SPACED REPETITION & SINKRONISASI
+       ========================================================================= */
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function getLevelInfo() {
+      const level = Math.floor(state.xp / 150) + 1;
+      const xpInLevel = state.xp % 150;
+      const titles = [
+        "Penjelajah Pemula",
+        "Pemburu Kata",
+        "Sahabat Bahasa",
+        "Ksatria Kosakata",
+        "Bintang Kelas 4",
+        "Master Pulau Kata",
+        "Legenda Bahasa"
+      ];
+      const title = titles[Math.min(level - 1, titles.length - 1)];
+      return { level, xpInLevel, xpNeeded: 150, title };
+    }
+
+    function addXP(amount) {
+      const beforeLv = getLevelInfo().level;
+      state.xp += amount;
+      const afterLv = getLevelInfo().level;
+      updateHeaderStats();
+      if (afterLv > beforeLv) {
+        SFX.fanfare();
+        Confetti.burst(90);
+        showToast(`🎊 NAIK LEVEL! Sekarang Level ${afterLv}: ${getLevelInfo().title}!`, "amber");
+      }
+      persistState();
+    }
+
+    function unlockBadge(badgeId) {
+      if (state.badges.includes(badgeId)) return;
+      state.badges.push(badgeId);
+      const def = BADGE_DEFS.find(b => b.id === badgeId);
+      if (def) {
+        SFX.fanfare();
+        Confetti.burst(70);
+        showToast(`🏆 Lencana Baru: ${def.icon} ${def.title}!`, "purple");
+      }
+      persistState();
+    }
+
+    function checkAutoBadges() {
+      if (state.roundsCompleted >= 1) unlockBadge('first_round');
+      if (state.masteredIds.length >= 10) unlockBadge('master_10');
+      if (state.masteredIds.length >= 30) unlockBadge('master_30');
+      if (state.bestCombo >= 5) unlockBadge('combo_5');
+    }
+
+    // Spaced Repetition: Catat jawaban salah -> masuk Keranjang Latihan Ulang
+    function recordWrongAnswer(wordId) {
+      state.practiceBasket[wordId] = { streak: 0 };
+      // Jika sebelumnya ditandai hafal, kembalikan agar dilatih lagi
+      state.masteredIds = state.masteredIds.filter(id => id !== wordId);
+      persistState();
+    }
+
+    // Spaced Repetition: Catat jawaban benar -> jika ada di Keranjang, butuh 2x benar beruntun
+    function recordCorrectAnswer(wordId) {
+      if (state.practiceBasket[wordId]) {
+        state.practiceBasket[wordId].streak += 1;
+        if (state.practiceBasket[wordId].streak >= 2) {
+          delete state.practiceBasket[wordId];
+          const w = state.vocab.find(v => v.id === wordId);
+          if (w) {
+            showToast(`🌟 Hebat! "${w.idWord}" lulus dari Keranjang Latihan!`, "emerald");
+          }
+        }
+        persistState();
+      }
+    }
+
+    function markWordMastered(wordId, mastered) {
+      SFX.pop();
+      if (mastered) {
+        if (!state.masteredIds.includes(wordId)) {
+          state.masteredIds.push(wordId);
+          addXP(5);
+        }
+        delete state.practiceBasket[wordId];
+        SFX.ding();
+        setMascot("happy", "Yeay! Satu kata lagi berhasil kamu hafalkan! 🌟");
+        checkAutoBadges();
+      } else {
+        state.masteredIds = state.masteredIds.filter(id => id !== wordId);
+        state.practiceBasket[wordId] = { streak: 0 };
+        setMascot("encourage", "Siap! Kata ini disimpan ke Keranjang Latihan Ulang ya! 🧺");
+      }
+      persistState();
+    }
+
+    function getCategories() {
+      const cats = [];
+      state.vocab.forEach(w => {
+        if (w.category && !cats.includes(w.category)) cats.push(w.category);
+      });
+      return cats;
+    }
+
+    function getFilteredVocab() {
+      const f = state.selectedFilter;
+      if (f === 'ALL') return state.vocab;
+      if (f === 'PACK_EN') return state.vocab.filter(w => w.pack === 'Inggris');
+      if (f === 'PACK_AR') return state.vocab.filter(w => w.pack === 'Arab');
+      if (f === 'BASKET') {
+        const basketIds = Object.keys(state.practiceBasket);
+        const list = state.vocab.filter(w => basketIds.includes(w.id));
+        return list.length > 0 ? list : state.vocab;
+      }
+      const byCat = state.vocab.filter(w => w.category === f);
+      return byCat.length > 0 ? byCat : state.vocab;
+    }
+
+    function updateHeaderStats() {
+      const info = getLevelInfo();
+      const lvEl = document.getElementById('hdr-level');
+      const xpEl = document.getElementById('hdr-xp');
+      if (lvEl) lvEl.textContent = info.level;
+      if (xpEl) xpEl.textContent = state.xp;
+
+      const snailIcon = document.getElementById('snail-icon');
+      const snailLabel = document.getElementById('snail-label');
+      const snailBtn = document.getElementById('btn-snail-global');
+      if (snailIcon && snailLabel && snailBtn) {
+        if (state.snailMode) {
+          snailIcon.textContent = '🐢';
+          snailLabel.textContent = 'Siput 0.65x';
+          snailBtn.className = 'flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 border-2 border-emerald-400 rounded-2xl px-2.5 py-1.5 text-xs font-extrabold text-emerald-900 transition shadow-sm';
+        } else {
+          snailIcon.textContent = '🐇';
+          snailLabel.textContent = 'Normal 1x';
+          snailBtn.className = 'flex items-center gap-1 bg-sky-50/90 hover:bg-sky-100 border-2 border-sky-200 rounded-2xl px-2.5 py-1.5 text-xs font-extrabold text-sky-800 transition shadow-sm';
+        }
+      }
+
+      const moodIcon = document.getElementById('mood-icon');
+      const moodLabel = document.getElementById('mood-label');
+      if (moodIcon && moodLabel) {
+        const cfg = {
+          day: { i: '☀️', l: 'Pagi' },
+          sunset: { i: '🌇', l: 'Senja' },
+          night: { i: '🌙', l: 'Malam' }
+        }[state.lightingMood] || { i: '☀️', l: 'Pagi' };
+        moodIcon.textContent = cfg.i;
+        moodLabel.textContent = cfg.l;
+      }
+
+      const bgmBtn = document.getElementById('btn-bgm-toggle');
+      if (bgmBtn) {
+        bgmBtn.className = state.bgmEnabled
+          ? 'w-10 h-10 flex items-center justify-center bg-emerald-400 text-white border-2 border-emerald-500 rounded-2xl text-base transition shadow-md animate-pulse'
+          : 'w-10 h-10 flex items-center justify-center bg-emerald-50/90 hover:bg-emerald-100 border-2 border-emerald-200 rounded-2xl text-base transition shadow-sm';
+      }
+
+      const muteBtn = document.getElementById('btn-mute-sfx');
+      if (muteBtn) {
+        muteBtn.textContent = state.sfxMuted ? '🔇' : '🔊';
+      }
+      updateFullscreenBtn();
+    }
+
+    /* =========================================================================
+       7B. KONTROL HALAMAN AWAL & OTOMATIS FULL SCREEN LINTAS PERANGKAT
+       ========================================================================= */
+    function isCurrentlyFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+    }
+
+    function updateFullscreenBtn() {
+      const btn = document.getElementById('btn-fullscreen');
+      if (!btn) return;
+      const active = isCurrentlyFullscreen();
+      btn.textContent = active ? '🗗' : '⛶';
+      btn.title = active ? 'Keluar Layar Penuh' : 'Layar Penuh (Fullscreen)';
+    }
+
+    async function requestAutoFullscreen() {
+      try {
+        if (isCurrentlyFullscreen()) return true;
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+          return true;
+        }
+        if (el.webkitRequestFullscreen) {
+          el.webkitRequestFullscreen();
+          return true;
+        }
+        if (el.msRequestFullscreen) {
+          el.msRequestFullscreen();
+          return true;
+        }
+      } catch (e) {
+        // Fallback halus jika browser/iFrame membatasi Fullscreen API
+      }
+      return false;
+    }
+
+    async function toggleFullscreen() {
+      SFX.pop();
+      try {
+        if (isCurrentlyFullscreen()) {
+          if (document.exitFullscreen) await document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+          else if (document.msExitFullscreen) document.msExitFullscreen();
+        } else {
+          const ok = await requestAutoFullscreen();
+          if (!ok) {
+            showToast('Perangkat/browser ini membatasi layar penuh otomatis, tampilan tetap menyesuaikan layar!', 'sky');
+          }
+        }
+      } catch (e) {}
+      updateFullscreenBtn();
+      setTimeout(() => {
+        World3D.onResize();
+        Confetti.resize();
+      }, 180);
+    }
+
+    function enterGameExperience() {
+      SFX.unlock();
+      SFX.fanfare();
+      requestAutoFullscreen();
+
+      const splash = document.getElementById('entry-splash');
+      if (splash && !splash.classList.contains('is-leaving')) {
+        splash.classList.add('is-leaving');
+        setTimeout(() => {
+          splash.classList.add('hidden');
+        }, 460);
+      }
+
+      World3D.setPaused(false);
+      World3D.react('happy');
+      setTimeout(() => {
+        World3D.onResize();
+        Confetti.resize();
+      }, 220);
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      updateFullscreenBtn();
+      World3D.onResize();
+      Confetti.resize();
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      updateFullscreenBtn();
+      World3D.onResize();
+      Confetti.resize();
+    });
+
+    function cycleLightingMood() {
+      SFX.pop();
+      const order = ['day', 'sunset', 'night'];
+      const next = order[(order.indexOf(state.lightingMood) + 1) % order.length];
+      state.lightingMood = next;
+      World3D.applyLightingMood(next);
+      updateHeaderStats();
+      const labels = { day: '☀️ Suasana Pagi Cerah!', sunset: '🌇 Suasana Senja Keemasan!', night: '🌙 Suasana Malam Berbintang!' };
+      showToast(labels[next], next === 'night' ? 'purple' : 'amber');
+      persistState();
+    }
+
+    function toggleBgm() {
+      SFX.pop();
+      state.bgmEnabled = !state.bgmEnabled;
+      if (state.bgmEnabled) {
+        SFX.startBgm();
+        showToast('🎵 Musik Pulau Ajaib dinyalakan!', 'emerald');
+      } else {
+        SFX.stopBgm();
+        showToast('🔇 Musik Pulau dimatikan.', 'sky');
+      }
+      updateHeaderStats();
+    }
+
+    function toggleExplore3D(forceVal = null) {
+      SFX.whoosh();
+      state.explore3D = forceVal !== null ? forceVal : !state.explore3D;
+      document.body.classList.toggle('explore-3d-active', state.explore3D);
+      const exitBar = document.getElementById('explore-exit-bar');
+      if (exitBar) exitBar.classList.toggle('hidden', !state.explore3D);
+      if (state.explore3D) {
+        World3D.orbit.targetDistance = 14.0;
+        World3D.orbit.targetLookAt?.set(0, 0.5, 0);
+        showToast('🏝️ Putar pulau 360° & klik menara bercahaya untuk bermain!', 'sky');
+      } else {
+        World3D.focusView(state.currentView);
+      }
+    }
+
+    function spawnFloatingFx(text, colorClass = 'text-amber-400', x = null, y = null) {
+      const layer = document.getElementById('fx-popup-layer');
+      if (!layer) return;
+      const el = document.createElement('div');
+      el.className = `fx-popup text-2xl sm:text-3xl ${colorClass}`;
+      el.style.left = (x !== null ? x : window.innerWidth * (0.4 + Math.random() * 0.2)) + 'px';
+      el.style.top = (y !== null ? y : window.innerHeight * 0.36) + 'px';
+      el.textContent = text;
+      layer.appendChild(el);
+      setTimeout(() => el.remove(), 1200);
+    }
+
+    // Efek 3D Parallax Tilt + Kilau Spekular untuk Kartu Ajaib
+    function handleCardTiltMove(event, stageEl) {
+      if (!stageEl) return;
+      const rect = stageEl.getBoundingClientRect();
+      const px = (event.clientX - rect.left) / rect.width;
+      const py = (event.clientY - rect.top) / rect.height;
+      const rotY = (px - 0.5) * 14;
+      const rotX = (0.5 - py) * 12;
+      stageEl.style.transform = `rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg)`;
+      stageEl.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+      stageEl.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+    }
+
+    function resetCardTilt(stageEl) {
+      if (!stageEl) return;
+      stageEl.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    }
+
+    function toggleSnailMode() {
+      SFX.pop();
+      state.snailMode = !state.snailMode;
+      updateHeaderStats();
+      showToast(
+        state.snailMode
+          ? "🐢 Mode Siput Aktif! Suara dibacakan pelan dan jelas (0.65x)."
+          : "🐇 Kecepatan Normal Aktif (1.0x).",
+        state.snailMode ? "emerald" : "sky"
+      );
+      persistState();
+    }
+
+    function toggleMuteSfx() {
+      state.sfxMuted = !state.sfxMuted;
+      if (!state.sfxMuted) SFX.pop();
+      updateHeaderStats();
+      persistState();
+    }
+
+    function dismissVoiceBanner() {
+      state.voiceBannerDismissed = true;
+      const b = document.getElementById('arabic-voice-banner');
+      if (b) b.classList.add('hidden');
+    }
+
+    function showToast(msg, color = "sky") {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const styles = {
+        sky: "bg-sky-600 text-white border-sky-300",
+        emerald: "bg-emerald-600 text-white border-emerald-300",
+        amber: "bg-amber-500 text-white border-amber-200",
+        purple: "bg-purple-600 text-white border-purple-300",
+        rose: "bg-rose-500 text-white border-rose-200"
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto px-4 py-2.5 rounded-2xl border-2 shadow-xl font-bold text-sm text-center transition-all duration-300 translate-y-4 opacity-0 ${styles[color] || styles.sky}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      requestAnimationFrame(() => {
+        el.classList.remove('translate-y-4', 'opacity-0');
+      });
+      setTimeout(() => {
+        el.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => el.remove(), 300);
+      }, 2800);
+    }
+
+    // Simpan otomatis ke localStorage + CloudStorage (jika aktif)
+    const LOCAL_STORAGE_KEY = 'pulau_kata_kelas4_state_v2';
+    let saveDebounce = null;
+    function persistState() {
+      const payload = {
+        vocab: state.vocab,
+        xp: state.xp,
+        roundsCompleted: state.roundsCompleted,
+        bestCombo: state.bestCombo,
+        masteredIds: state.masteredIds,
+        practiceBasket: state.practiceBasket,
+        badges: state.badges,
+        snailMode: state.snailMode,
+        sfxMuted: state.sfxMuted,
+        lightingMood: state.lightingMood
+      };
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {}
+
+      clearTimeout(saveDebounce);
+      saveDebounce = setTimeout(() => {
+        if (window.CloudStorage && window.CloudStorage.ready) {
+          window.CloudStorage.save(payload);
+        }
+      }, 450);
+    }
+
+    /* =========================================================================
+       8. MASKOT INTERAKTIF ("KIKO SI BURUNG HANTU PINTAR" — SINKRON 2D & 3D)
+       ========================================================================= */
+    function setMascot(mood, speech) {
+      state.mascotMood = mood;
+      state.mascotSpeech = speech;
+      World3D.react(mood);
+      const wrap = document.getElementById('mascot-box');
+      if (wrap) {
+        wrap.innerHTML = renderMascotInner();
+      }
+    }
+
+    function renderMascotInner() {
+      const animClass =
+        state.mascotMood === 'happy' ? 'animate-happy' :
+        state.mascotMood === 'encourage' ? 'animate-wiggle' :
+        'animate-float';
+
+      const eyeSvg = state.mascotMood === 'happy'
+        ? `<path d="M35 48 Q40 42 45 48" stroke="#1e293b" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+           <path d="M55 48 Q60 42 65 48" stroke="#1e293b" stroke-width="3.2" fill="none" stroke-linecap="round"/>`
+        : state.mascotMood === 'encourage'
+        ? `<circle cx="40" cy="48" r="4.5" fill="#1e293b"/><circle cx="41.5" cy="46.5" r="1.5" fill="#fff"/>
+           <path d="M55 48 Q60 44 65 48" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>`
+        : `<circle cx="40" cy="48" r="4.8" fill="#1e293b"/><circle cx="41.5" cy="46.5" r="1.7" fill="#fff"/>
+           <circle cx="60" cy="48" r="4.8" fill="#1e293b"/><circle cx="61.5" cy="46.5" r="1.7" fill="#fff"/>`;
+
+      const sparkles = state.mascotMood === 'happy'
+        ? `<text x="6" y="24" font-size="16">✨</text><text x="78" y="22" font-size="16">⭐</text>`
+        : '';
+
+      return `
+        <div class="flex items-center gap-3 sm:gap-4">
+          <div class="shrink-0 w-16 h-16 sm:w-20 sm:h-20 ${animClass}">
+            <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+              ${sparkles}
+              <!-- Tubuh Kiko -->
+              <ellipse cx="50" cy="60" rx="33" ry="32" fill="#38bdf8"/>
+              <ellipse cx="50" cy="67" rx="22" ry="21" fill="#e0f2fe"/>
+              <!-- Telinga Bulu -->
+              <polygon points="24,35 30,17 42,30" fill="#0284c7"/>
+              <polygon points="76,35 70,17 58,30" fill="#0284c7"/>
+              <!-- Sayap -->
+              <ellipse cx="19" cy="61" rx="8" ry="15" transform="rotate(14 19 61)" fill="#0284c7"/>
+              <ellipse cx="81" cy="61" rx="8" ry="15" transform="rotate(-14 81 61)" fill="#0284c7"/>
+              <!-- Lingkar Mata -->
+              <circle cx="40" cy="48" r="12" fill="#ffffff"/>
+              <circle cx="60" cy="48" r="12" fill="#ffffff"/>
+              ${eyeSvg}
+              <!-- Pipi Merona -->
+              <ellipse cx="29" cy="57" rx="4.5" ry="2.6" fill="#fda4af" opacity="0.85"/>
+              <ellipse cx="71" cy="57" rx="4.5" ry="2.6" fill="#fda4af" opacity="0.85"/>
+              <!-- Paruh -->
+              <polygon points="45,54 55,54 50,62" fill="#f59e0b"/>
+              <!-- Kaki -->
+              <rect x="38" y="88" width="8" height="6" rx="3" fill="#f59e0b"/>
+              <rect x="54" y="88" width="8" height="6" rx="3" fill="#f59e0b"/>
+            </svg>
+          </div>
+          <div class="flex-1 bg-white/95 border-2 border-sky-200 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
+            <div class="text-[11px] font-black text-sky-600 uppercase tracking-wide">Kiko si Burung Hantu</div>
+            <p class="text-sm sm:text-base font-bold text-slate-700 leading-snug">${escapeHtml(state.mascotSpeech)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    /* =========================================================================
+       9. NAVIGASI & RENDER HALAMAN UTAMA (BERANDA)
+       ========================================================================= */
+    function clearTimers() {
+      if (state.audioGame.timerId) {
+        clearInterval(state.audioGame.timerId);
+        state.audioGame.timerId = null;
+      }
+      SpeechEngine.stop();
+    }
+
+    function navigateTo(view) {
+      SFX.pop();
+      clearTimers();
+      if (state.explore3D) toggleExplore3D(false);
+      state.currentView = view;
+      World3D.focusView(view);
+
+      if (view === 'home') {
+        state.mascotMood = 'idle';
+        state.mascotSpeech = 'Putar pulau 3D di atas atau klik salah satu pulau permainan di bawah ini! 🏝️✨';
+        renderHome();
+      } else if (view === 'flashcard') {
+        startFlashcardMode();
+      } else if (view === 'audio') {
+        startAudioQuest();
+      } else if (view === 'memory') {
+        startMemoryMatch();
+      } else if (view === 'mission') {
+        startMissionMode();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function selectFilter(filterVal) {
+      SFX.pop();
+      state.selectedFilter = filterVal;
+      renderHome();
+    }
+
+    function renderHome() {
+      const main = document.getElementById('app-main');
+      const lv = getLevelInfo();
+      const xpPct = Math.round((lv.xpInLevel / lv.xpNeeded) * 100);
+      const totalWords = state.vocab.length;
+      const masteredCount = state.masteredIds.filter(id => state.vocab.some(v => v.id === id)).length;
+      const basketCount = Object.keys(state.practiceBasket).filter(id => state.vocab.some(v => v.id === id)).length;
+      const activeList = getFilteredVocab();
+      const categories = getCategories();
+
+      const filterPill = (val, label, count) => {
+        const active = state.selectedFilter === val;
+        return `
+          <button onclick="selectFilter('${escapeHtml(val)}')"
+            class="px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-extrabold border-2 transition whitespace-nowrap
+            ${active
+              ? 'bg-sky-500 text-white border-sky-600 shadow-md scale-[1.03]'
+              : 'bg-white/90 hover:bg-sky-50 text-slate-700 border-white'}">
+            ${label} <span class="opacity-80">(${count})</span>
+          </button>
+        `;
+      };
+
+      const enCount = state.vocab.filter(w => w.pack === 'Inggris').length;
+      const arCount = state.vocab.filter(w => w.pack === 'Arab').length;
+
+      main.innerHTML = `
+        <div class="space-y-5">
+          <!-- JENDELA INTERAKTIF DUNIA PULAU 3D LIVE -->
+          <section class="relative">
+            <div id="island-stage-window" class="pointer-events-auto relative w-full h-[clamp(200px,30dvh,315px)] rounded-3xl border-2 border-white/55 shadow-inner overflow-hidden cursor-grab active:cursor-grabbing" style="touch-action:none;">
+              <!-- Label Petunjuk Interaktif 3D -->
+              <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
+                <div class="studio-glass-dark px-3.5 py-1.5 rounded-2xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 shadow-lg">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Pulau 3D Interaktif • Geser 360° & Klik Menara!</span>
+                </div>
+                <button onclick="event.stopPropagation(); toggleExplore3D(true)" class="pointer-events-auto btn-3d btn-3d-blue bg-sky-500/95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-2xl shadow-lg">
+                  🔭 Layar Penuh
+                </button>
+              </div>
+              <!-- Legenda 4 Menara Pulau di Sudut Bawah -->
+              <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-center gap-1.5 pointer-events-none">
+                <span class="studio-glass-dark px-2.5 py-1 rounded-xl text-[11px] font-bold">🔵 Kartu</span>
+                <span class="studio-glass-dark px-2.5 py-1 rounded-xl text-[11px] font-bold">🟢 Telinga</span>
+                <span class="studio-glass-dark px-2.5 py-1 rounded-xl text-[11px] font-bold">🟣 Memori</span>
+                <span class="studio-glass-dark px-2.5 py-1 rounded-xl text-[11px] font-bold">🟡 Bos Bintang</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Kartu Sambutan Maskot + Progres Petualang -->
+          <section class="pointer-events-auto studio-glass rounded-3xl p-4 sm:p-5">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+              <div id="mascot-box" class="lg:col-span-7">
+                ${renderMascotInner()}
+              </div>
+              <div class="lg:col-span-5 bg-white/85 rounded-2xl border-2 border-amber-200 p-4 space-y-2.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-xs font-extrabold uppercase text-amber-600">Level ${lv.level}</span>
+                    <h2 class="font-display font-bold text-lg text-slate-800">${lv.title}</h2>
+                  </div>
+                  <button onclick="openBadgesModal()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-extrabold px-3 py-1.5 rounded-xl">
+                    🏆 ${state.badges.length}/${BADGE_DEFS.length}
+                  </button>
+                </div>
+                <div class="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                  <div class="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-500" style="width:${xpPct}%"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                  <div class="bg-emerald-50 rounded-xl py-1.5 px-1 border border-emerald-200">
+                    <div class="text-base font-black text-emerald-700">${masteredCount}</div>
+                    <div class="text-[10px] font-bold text-emerald-700">Sudah Hafal</div>
+                  </div>
+                  <div class="bg-orange-50 rounded-xl py-1.5 px-1 border border-orange-200">
+                    <div class="text-base font-black text-orange-600">${basketCount}</div>
+                    <div class="text-[10px] font-bold text-orange-700">Latih Ulang</div>
+                  </div>
+                  <div class="bg-sky-50 rounded-xl py-1.5 px-1 border border-sky-200">
+                    <div class="text-base font-black text-sky-700">${totalWords}</div>
+                    <div class="text-[10px] font-bold text-sky-700">Total Kata</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4 MODE PERMAINAN BERTAHAP (STUDIO LAUNCHER) -->
+          <section class="pointer-events-auto">
+            <h2 class="font-display font-bold text-xl sm:text-2xl text-slate-800 drop-shadow-sm mb-3 px-1 flex items-center gap-2">
+              <span class="studio-glass px-3 py-1 rounded-2xl">🎮 Pilih Pulau Permainan</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button onclick="navigateTo('flashcard')" class="btn-3d btn-3d-blue text-left bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500 text-white rounded-3xl p-5 sm:p-6 flex items-center gap-4 relative overflow-hidden border-2 border-white/50">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/25 backdrop-blur flex items-center justify-center text-4xl sm:text-5xl shrink-0 shadow-inner">🃏</div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[11px] font-black uppercase tracking-wider bg-white/25 px-2.5 py-0.5 rounded-full mb-1">Tahap 1 • Hafalan 3D</span>
+                  <h3 class="font-display font-bold text-xl sm:text-2xl leading-tight">Kartu Ajaib 3D</h3>
+                  <p class="text-xs sm:text-sm text-sky-50 font-semibold mt-1">Balik kartu kilau 3D, geser kiri/kanan, & dengar Inggris → Arab beruntun!</p>
+                </div>
+              </button>
+
+              <button onclick="navigateTo('audio')" class="btn-3d btn-3d-emerald text-left bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 text-white rounded-3xl p-5 sm:p-6 flex items-center gap-4 relative overflow-hidden border-2 border-white/50">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/25 backdrop-blur flex items-center justify-center text-4xl sm:text-5xl shrink-0 shadow-inner">👂</div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[11px] font-black uppercase tracking-wider bg-white/25 px-2.5 py-0.5 rounded-full mb-1">Tahap 2 • Audio Quest</span>
+                  <h3 class="font-display font-bold text-xl sm:text-2xl leading-tight">Telinga Super</h3>
+                  <p class="text-xs sm:text-sm text-emerald-50 font-semibold mt-1">Lihat gelombang suara hidup & pecahkan balon arti sebelum waktu habis!</p>
+                </div>
+              </button>
+
+              <button onclick="navigateTo('memory')" class="btn-3d btn-3d-purple text-left bg-gradient-to-br from-violet-400 via-purple-500 to-fuchsia-600 text-white rounded-3xl p-5 sm:p-6 flex items-center gap-4 relative overflow-hidden border-2 border-white/50">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/25 backdrop-blur flex items-center justify-center text-4xl sm:text-5xl shrink-0 shadow-inner">🧩</div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[11px] font-black uppercase tracking-wider bg-white/25 px-2.5 py-0.5 rounded-full mb-1">Tahap 3 • Memori</span>
+                  <h3 class="font-display font-bold text-xl sm:text-2xl leading-tight">Cocokkan Pasangan</h3>
+                  <p class="text-xs sm:text-sm text-purple-50 font-semibold mt-1">Buka kartu kristal 3D bersuara otomatis untuk melatih ingatan tajam!</p>
+                </div>
+              </button>
+
+              <button onclick="navigateTo('mission')" class="btn-3d btn-3d-amber text-left bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 text-white rounded-3xl p-5 sm:p-6 flex items-center gap-4 relative overflow-hidden border-2 border-white/50">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/25 backdrop-blur flex items-center justify-center text-4xl sm:text-5xl shrink-0 shadow-inner">🚀</div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[11px] font-black uppercase tracking-wider bg-white/25 px-2.5 py-0.5 rounded-full mb-1">Tahap 4 • Boss Battle</span>
+                  <h3 class="font-display font-bold text-xl sm:text-2xl leading-tight">Misi Bintang</h3>
+                  <p class="text-xs sm:text-sm text-amber-50 font-semibold mt-1">Kuis kilat 3 bahasa, perisai Bos, Api Combo Streak & Spaced Repetition!</p>
+                </div>
+              </button>
+            </div>
+          </section>
+
+          <!-- Pemilih Paket & Topik Kosakata -->
+          <section class="pointer-events-auto studio-glass rounded-3xl p-4 sm:p-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h2 class="font-display font-bold text-lg text-slate-800 flex items-center gap-2">
+                🗺️ Pilih Peta Kosakata
+                <span class="text-xs font-extrabold bg-sky-100 text-sky-700 px-2.5 py-0.5 rounded-full">${activeList.length} kata aktif</span>
+              </h2>
+              ${basketCount > 0 ? `<span class="text-xs font-bold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full">🧺 Ada ${basketCount} kata di Keranjang Latihan</span>` : ''}
+            </div>
+            <div class="flex flex-wrap gap-2">
+              ${filterPill('ALL', '🌈 Semua Kata', totalWords)}
+              ${enCount > 0 ? filterPill('PACK_EN', '🇬🇧 Kurplus Inggris', enCount) : ''}
+              ${arCount > 0 ? filterPill('PACK_AR', '🇸🇦 Kurplus Arab', arCount) : ''}
+              ${basketCount > 0 ? filterPill('BASKET', '🧺 Keranjang Latihan', basketCount) : ''}
+              ${categories.map(cat => filterPill(cat, '📌 ' + cat, state.vocab.filter(w => w.category === cat).length)).join('')}
+            </div>
+          </section>
+        </div>
+      `;
+
+      // Hubungkan kontrol sentuh/mouse 3D ke jendela panggung pulau
+      World3D.attachStageProxy(document.getElementById('island-stage-window'));
+    }
+
+    /* =========================================================================
+       10. MODE 1: KARTU AJAIB 3D (TILT PARALLAX, SWIPE SENTUH & KEYBOARD)
+       ========================================================================= */
+    let fcTouchStartX = 0;
+
+    function startFlashcardMode() {
+      const list = getFilteredVocab();
+      state.fc.deck = [...list];
+      state.fc.index = 0;
+      state.fc.flipped = false;
+      state.mascotMood = 'idle';
+      state.mascotSpeech = 'Ketuk kartu untuk membalik, atau geser kiri/kanan untuk pindah kata! 🃏✨';
+      renderFlashcard();
+    }
+
+    function flipFlashcard() {
+      SFX.whoosh();
+      state.fc.flipped = !state.fc.flipped;
+      const inner = document.getElementById('fc-flip-inner');
+      if (inner) {
+        inner.classList.toggle('is-flipped', state.fc.flipped);
+      }
+      if (state.fc.flipped) {
+        const w = state.fc.deck[state.fc.index];
+        if (w) {
+          SpeechEngine.speak(w.pack === 'Arab' ? w.arWord : w.enWord, w.pack === 'Arab' ? 'ar' : 'en');
+        }
+      }
+    }
+
+    function nextFlashcard(delta) {
+      SFX.pop();
+      SpeechEngine.stop();
+      const len = state.fc.deck.length;
+      state.fc.index = (state.fc.index + delta + len) % len;
+      state.fc.flipped = false;
+      renderFlashcard();
+    }
+
+    function shuffleFlashcardDeck() {
+      SFX.whoosh();
+      SpeechEngine.stop();
+      state.fc.deck = shuffle(state.fc.deck);
+      state.fc.index = 0;
+      state.fc.flipped = false;
+      showToast("🔀 Kartu sudah diacak!", "sky");
+      renderFlashcard();
+    }
+
+    function playFlashcardVoice(lang, event) {
+      if (event) event.stopPropagation();
+      const w = state.fc.deck[state.fc.index];
+      if (!w) return;
+      if (lang === 'seq') {
+        SpeechEngine.speakSequential(w, (phase) => {
+          const btn = document.getElementById('btn-seq-fc');
+          if (!btn) return;
+          if (phase === 'en') btn.innerHTML = '🔊 Membaca Inggris...';
+          else if (phase === 'pause') btn.innerHTML = '⏳ Jeda...';
+          else if (phase === 'ar') btn.innerHTML = '🔊 Membaca Arab...';
+          else btn.innerHTML = '✨ Dengar Beruntun (EN → AR)';
+        });
+      } else {
+        SpeechEngine.speak(lang === 'ar' ? w.arWord : w.enWord, lang);
+      }
+    }
+
+    function handleFlashcardMastery(mastered) {
+      const w = state.fc.deck[state.fc.index];
+      if (!w) return;
+      markWordMastered(w.id, mastered);
+      if (mastered) {
+        spawnFloatingFx('⭐ +5 XP HAFAL!', 'text-emerald-400');
+      }
+      setTimeout(() => {
+        if (state.currentView === 'flashcard') {
+          nextFlashcard(1);
+        }
+      }, 380);
+    }
+
+    function renderFlashcard() {
+      const main = document.getElementById('app-main');
+      const w = state.fc.deck[state.fc.index];
+      if (!w) {
+        navigateTo('home');
+        return;
+      }
+      const isMastered = state.masteredIds.includes(w.id);
+      const inBasket = !!state.practiceBasket[w.id];
+      const progressPct = Math.round(((state.fc.index + 1) / state.fc.deck.length) * 100);
+
+      main.innerHTML = `
+        <div class="pointer-events-auto max-w-2xl mx-auto space-y-4">
+          <!-- Bar Atas Mode -->
+          <div class="flex items-center justify-between gap-2">
+            <button onclick="navigateTo('home')" class="btn-3d btn-3d-slate bg-white/95 text-slate-700 font-extrabold text-sm px-4 py-2 rounded-2xl border-2 border-white">
+              ← Beranda
+            </button>
+            <div class="studio-glass px-4 py-1.5 rounded-2xl text-center">
+              <div class="font-display font-bold text-base sm:text-lg text-slate-800 leading-tight">🃏 Kartu Ajaib 3D</div>
+              <div class="text-xs font-extrabold text-sky-600">Kartu ${state.fc.index + 1} dari ${state.fc.deck.length}</div>
+            </div>
+            <button onclick="shuffleFlashcardDeck()" class="btn-3d btn-3d-slate bg-white/95 text-sky-700 font-extrabold text-sm px-3.5 py-2 rounded-2xl border-2 border-white">
+              🔀 Acak
+            </button>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full h-3.5 bg-white/75 backdrop-blur rounded-full overflow-hidden border border-white shadow-inner">
+            <div class="h-full bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 rounded-full transition-all duration-300" style="width:${progressPct}%"></div>
+          </div>
+
+          <!-- Kartu Flip 3D dengan Parallax Tilt + Sheen + Touch Swipe -->
+          <div class="perspective-1200 fc-stage-height w-full h-[clamp(370px,56dvh,455px)]"
+               ontouchstart="fcTouchStartX = event.touches[0].clientX"
+               ontouchend="const dx = event.changedTouches[0].clientX - fcTouchStartX; if (Math.abs(dx) > 65) nextFlashcard(dx < 0 ? 1 : -1);">
+            <div class="tilt-stage w-full h-full relative"
+                 onmousemove="handleCardTiltMove(event, this)"
+                 onmouseleave="resetCardTilt(this)">
+              <div class="card-sheen"></div>
+              <div id="fc-flip-inner" onclick="flipFlashcard()" class="flip-inner cursor-pointer ${state.fc.flipped ? 'is-flipped' : ''}">
+
+                <!-- SISI DEPAN: Emoji Besar + Bahasa Indonesia -->
+                <div class="flip-face bg-gradient-to-b from-white/95 to-sky-50/95 backdrop-blur-xl border-4 border-white shadow-2xl p-6 flex flex-col items-center justify-between text-center">
+                  <div class="w-full flex items-center justify-between gap-2">
+                    <span class="bg-sky-100 text-sky-800 text-xs font-extrabold px-3 py-1 rounded-full">📌 ${escapeHtml(w.category)}</span>
+                    <span class="text-xs font-extrabold px-3 py-1 rounded-full ${isMastered ? 'bg-emerald-100 text-emerald-700' : inBasket ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500'}">
+                      ${isMastered ? '✅ Sudah Hafal' : inBasket ? '🔁 Perlu Diulang' : '✨ Baru'}
+                    </span>
+                  </div>
+
+                  <div class="my-auto flex flex-col items-center">
+                    <div class="text-8xl sm:text-9xl mb-5 drop-shadow-md select-none animate-float">${escapeHtml(w.emoji)}</div>
+                    <div class="text-xs font-extrabold uppercase tracking-widest text-sky-500 mb-1">Bahasa Indonesia</div>
+                    <h2 class="font-display font-bold text-3xl sm:text-4xl text-slate-800 leading-tight">${escapeHtml(w.idWord)}</h2>
+                  </div>
+
+                  <div class="w-full bg-sky-100/90 text-sky-800 font-extrabold text-sm py-2.5 rounded-2xl animate-pulse">
+                    👆 Ketuk kartu (atau Spasi) untuk melihat Inggris & Arab!
+                  </div>
+                </div>
+
+                <!-- SISI BELAKANG: Inggris + Arab Berharakat + Transliterasi + Audio -->
+                <div class="flip-face flip-back bg-gradient-to-b from-white/95 to-amber-50/90 backdrop-blur-xl border-4 border-amber-300 shadow-2xl p-5 sm:p-6 flex flex-col justify-between text-center">
+                  <div class="flex items-center justify-between text-xs font-extrabold text-slate-500">
+                    <span>${escapeHtml(w.emoji)} ${escapeHtml(w.idWord)}</span>
+                    <span class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full">Ketuk kartu utk balik</span>
+                  </div>
+
+                  <!-- Kotak Bahasa Inggris -->
+                  <div class="bg-blue-50/95 border-2 border-blue-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+                    <div class="text-left">
+                      <div class="text-[11px] font-black uppercase text-blue-500">🇬🇧 Bahasa Inggris</div>
+                      <div class="font-display font-bold text-2xl sm:text-3xl text-slate-800">${escapeHtml(w.enWord)}</div>
+                    </div>
+                    <button onclick="playFlashcardVoice('en', event)" class="btn-3d btn-3d-blue shrink-0 bg-blue-500 text-white font-extrabold px-4 py-2.5 rounded-2xl text-sm flex items-center gap-1.5">
+                      🔊 <span>EN</span>
+                    </button>
+                  </div>
+
+                  <!-- Kotak Bahasa Arab Berharakat Penuh -->
+                  <div class="bg-emerald-50/95 border-2 border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+                    <div class="flex-1 text-right" dir="rtl" lang="ar">
+                      <div class="text-[11px] font-black uppercase text-emerald-600 text-left" dir="ltr">🇸🇦 Bahasa Arab</div>
+                      <div class="arabic-text arabic-hero text-emerald-950 my-0.5">${escapeHtml(w.arWord)}</div>
+                      <div class="text-sm sm:text-base font-extrabold text-emerald-700 text-left" dir="ltr">🗣️ ${escapeHtml(w.translit)}</div>
+                    </div>
+                    <button onclick="playFlashcardVoice('ar', event)" class="btn-3d btn-3d-emerald shrink-0 bg-emerald-500 text-white font-extrabold px-4 py-2.5 rounded-2xl text-sm flex items-center gap-1.5">
+                      🔊 <span>AR</span>
+                    </button>
+                  </div>
+
+                  <!-- Tombol Dengar Beruntun -->
+                  <button id="btn-seq-fc" onclick="playFlashcardVoice('seq', event)" class="btn-3d btn-3d-purple w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-extrabold py-3 rounded-2xl text-sm sm:text-base">
+                    ✨ Dengar Beruntun (EN → AR)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tombol Status Penguasaan -->
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="handleFlashcardMastery(false)" class="btn-3d btn-3d-amber bg-amber-400 text-amber-950 font-display font-bold text-base sm:text-lg py-3.5 rounded-2xl">
+              🔁 Latih Lagi
+            </button>
+            <button onclick="handleFlashcardMastery(true)" class="btn-3d btn-3d-emerald bg-emerald-500 text-white font-display font-bold text-base sm:text-lg py-3.5 rounded-2xl">
+              ✅ Sudah Hafal!
+            </button>
+          </div>
+
+          <!-- Navigasi Kartu Sebelumnya / Berikutnya -->
+          <div class="flex items-center justify-between gap-3">
+            <button onclick="nextFlashcard(-1)" class="btn-3d btn-3d-slate flex-1 bg-white/95 text-slate-700 font-extrabold py-3 rounded-2xl border-2 border-white">
+              ◀ Sebelumnya
+            </button>
+            <button onclick="nextFlashcard(1)" class="btn-3d btn-3d-slate flex-1 bg-white/95 text-slate-700 font-extrabold py-3 rounded-2xl border-2 border-white">
+              Berikutnya ▶
+            </button>
+          </div>
+
+          <!-- Maskot -->
+          <div id="mascot-box" class="studio-glass rounded-3xl p-3">${renderMascotInner()}</div>
+        </div>
+      `;
+    }
+
+    /* =========================================================================
+       11. MODE 2: TELINGA SUPER (AUDIO QUEST + LIVE EQUALIZER)
+       ========================================================================= */
+    function setAudioLangMode(mode) {
+      SFX.pop();
+      state.audioGame.langMode = mode;
+      startAudioQuest();
+    }
+
+    function startAudioQuest() {
+      clearTimers();
+      const pool = getFilteredVocab();
+      const allPool = state.vocab;
+      const roundSize = Math.min(8, pool.length);
+      const chosen = shuffle(pool).slice(0, roundSize);
+
+      const questions = chosen.map(target => {
+        const lang =
+          state.audioGame.langMode === 'EN' ? 'en' :
+          state.audioGame.langMode === 'AR' ? 'ar' :
+          (Math.random() < 0.5 ? 'en' : 'ar');
+
+        const distractors = shuffle(allPool.filter(w => w.id !== target.id && w.idWord !== target.idWord)).slice(0, 3);
+        const options = shuffle([target, ...distractors]);
+        return { target, lang, options };
+      });
+
+      state.audioGame.questions = questions;
+      state.audioGame.qIndex = 0;
+      state.audioGame.score = 0;
+      state.audioGame.correctCount = 0;
+      state.audioGame.locked = false;
+      state.audioGame.finished = false;
+      state.audioGame.lastWrongId = null;
+
+      state.mascotMood = 'idle';
+      state.mascotSpeech = 'Pasang telinga supermu! Dengarkan suaranya lalu pecahkan balon arti yang cocok! 🎈';
+
+      renderAudioQuest();
+      playCurrentAudioQuestion();
+      startAudioTimer();
+    }
+
+    function playCurrentAudioQuestion() {
+      const q = state.audioGame.questions[state.audioGame.qIndex];
+      if (!q) return;
+      const text = q.lang === 'ar' ? q.target.arWord : q.target.enWord;
+      SpeechEngine.speak(text, q.lang);
+    }
+
+    function startAudioTimer() {
+      if (state.audioGame.timerId) clearInterval(state.audioGame.timerId);
+      state.audioGame.timerSec = 15;
+      updateAudioTimerUI();
+
+      state.audioGame.timerId = setInterval(() => {
+        if (state.currentView !== 'audio' || state.audioGame.finished || state.audioGame.locked) return;
+        state.audioGame.timerSec--;
+        updateAudioTimerUI();
+        if (state.audioGame.timerSec <= 0) {
+          clearInterval(state.audioGame.timerId);
+          const q = state.audioGame.questions[state.audioGame.qIndex];
+          SFX.boing();
+          recordWrongAnswer(q.target.id);
+          state.audioGame.locked = true;
+          setMascot('encourage', `Waktunya habis! Jawabannya adalah "${q.target.idWord}". Yuk lanjut soal berikutnya! 🌈`);
+          highlightAudioAnswer(null, q.target.id);
+          setTimeout(() => advanceAudioQuest(), 1900);
+        }
+      }, 1000);
+    }
+
+    function updateAudioTimerUI() {
+      const bar = document.getElementById('audio-timer-bar');
+      const txt = document.getElementById('audio-timer-txt');
+      if (bar) {
+        const pct = Math.max(0, (state.audioGame.timerSec / 15) * 100);
+        bar.style.width = pct + '%';
+        bar.className = `h-full rounded-full transition-all duration-1000 ${pct > 45 ? 'bg-emerald-400' : pct > 20 ? 'bg-amber-400' : 'bg-rose-400'}`;
+      }
+      if (txt) txt.textContent = state.audioGame.timerSec + ' dtk';
+    }
+
+    function answerAudioQuest(chosenId) {
+      if (state.audioGame.locked) return;
+      const q = state.audioGame.questions[state.audioGame.qIndex];
+      if (!q) return;
+
+      state.audioGame.locked = true;
+      if (state.audioGame.timerId) clearInterval(state.audioGame.timerId);
+
+      if (chosenId === q.target.id) {
+        SFX.ding();
+        state.audioGame.correctCount++;
+        state.audioGame.score += 20;
+        recordCorrectAnswer(q.target.id);
+        spawnFloatingFx('✨ +20 POIN!', 'text-emerald-400');
+        setMascot('happy', randomItem(PRAISE_MESSAGES));
+        highlightAudioAnswer(chosenId, q.target.id);
+        setTimeout(() => advanceAudioQuest(), 1100);
+      } else {
+        SFX.boing();
+        recordWrongAnswer(q.target.id);
+        setMascot('encourage', `${randomItem(ENCOURAGE_MESSAGES)} Jawaban tepatnya: "${q.target.idWord}".`);
+        highlightAudioAnswer(chosenId, q.target.id);
+        setTimeout(() => advanceAudioQuest(), 1850);
+      }
+    }
+
+    function highlightAudioAnswer(chosenId, correctId) {
+      const btns = document.querySelectorAll('[data-audio-opt]');
+      btns.forEach(btn => {
+        const id = btn.getAttribute('data-audio-opt');
+        if (id === correctId) {
+          btn.classList.add('ring-4', 'ring-emerald-400', 'bg-emerald-100', 'border-emerald-500', 'scale-[1.04]');
+        } else if (id === chosenId) {
+          btn.classList.add('ring-4', 'ring-amber-400', 'bg-amber-50', 'border-amber-400', 'opacity-80');
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+    }
+
+    function advanceAudioQuest() {
+      if (state.currentView !== 'audio') return;
+      state.audioGame.qIndex++;
+      if (state.audioGame.qIndex >= state.audioGame.questions.length) {
+        finishAudioQuest();
+      } else {
+        state.audioGame.locked = false;
+        renderAudioQuest();
+        playCurrentAudioQuestion();
+        startAudioTimer();
+      }
+    }
+
+    function finishAudioQuest() {
+      clearTimers();
+      state.audioGame.finished = true;
+      state.roundsCompleted++;
+      const total = state.audioGame.questions.length;
+      const ratio = state.audioGame.correctCount / total;
+      const stars = ratio >= 0.85 ? 3 : ratio >= 0.55 ? 2 : 1;
+      const earnedXp = state.audioGame.correctCount * 15 + stars * 10;
+
+      addXP(earnedXp);
+      if (stars === 3) unlockBadge('audio_star');
+      checkAutoBadges();
+      SFX.fanfare();
+      Confetti.burst(95);
+      World3D.spawnBurst(0x34d399, 45);
+
+      renderRoundResult({
+        title: "Misi Telinga Super Selesai!",
+        stars,
+        correct: state.audioGame.correctCount,
+        total,
+        earnedXp,
+        replayFn: "startAudioQuest()"
+      });
+    }
+
+    function renderAudioQuest() {
+      const main = document.getElementById('app-main');
+      const q = state.audioGame.questions[state.audioGame.qIndex];
+      if (!q) return;
+
+      const langBadge = q.lang === 'ar'
+        ? '<span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-black">🇸🇦 Suara Bahasa Arab</span>'
+        : '<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-black">🇬🇧 Suara Bahasa Inggris</span>';
+
+      const balloonColors = [
+        'from-sky-50/95 to-blue-100/95 border-sky-300 text-sky-950',
+        'from-amber-50/95 to-yellow-100/95 border-amber-300 text-amber-950',
+        'from-pink-50/95 to-rose-100/95 border-pink-300 text-rose-950',
+        'from-violet-50/95 to-purple-100/95 border-violet-300 text-purple-950'
+      ];
+
+      main.innerHTML = `
+        <div class="pointer-events-auto max-w-2xl mx-auto space-y-4">
+          <!-- Header & Mode Bahasa -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <button onclick="navigateTo('home')" class="btn-3d btn-3d-slate bg-white/95 text-slate-700 font-extrabold text-sm px-4 py-2 rounded-2xl border-2 border-white">
+              ← Beranda
+            </button>
+            <div class="flex bg-white/90 backdrop-blur p-1 rounded-2xl border-2 border-emerald-200 gap-1 shadow-sm">
+              <button onclick="setAudioLangMode('EN')" class="px-3 py-1 rounded-xl text-xs font-extrabold ${state.audioGame.langMode === 'EN' ? 'bg-blue-500 text-white' : 'text-slate-600'}">🇬🇧 EN</button>
+              <button onclick="setAudioLangMode('AR')" class="px-3 py-1 rounded-xl text-xs font-extrabold ${state.audioGame.langMode === 'AR' ? 'bg-emerald-500 text-white' : 'text-slate-600'}">🇸🇦 AR</button>
+              <button onclick="setAudioLangMode('MIX')" class="px-3 py-1 rounded-xl text-xs font-extrabold ${state.audioGame.langMode === 'MIX' ? 'bg-purple-500 text-white' : 'text-slate-600'}">🌈 Campur</button>
+            </div>
+            <div class="studio-glass px-3.5 py-1.5 rounded-2xl font-extrabold text-sm text-emerald-700">
+              Soal ${state.audioGame.qIndex + 1}/${state.audioGame.questions.length}
+            </div>
+          </div>
+
+          <!-- Timer Ramah -->
+          <div class="studio-glass flex items-center gap-3 rounded-2xl px-4 py-2.5">
+            <span class="text-lg">⏱️</span>
+            <div class="flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="audio-timer-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-1000" style="width:100%"></div>
+            </div>
+            <span id="audio-timer-txt" class="text-xs font-black text-slate-700 w-12 text-right">15 dtk</span>
+          </div>
+
+          <!-- Panggung Pemutar Suara + Live Equalizer -->
+          <div class="studio-glass rounded-3xl p-6 text-center space-y-4">
+            <div class="flex items-center justify-center gap-3">
+              ${langBadge}
+              <div class="audio-eq flex items-end gap-1 h-7 ${state.isSpeaking ? 'eq-active' : ''}">
+                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+              </div>
+            </div>
+            <button onclick="playCurrentAudioQuestion()" class="btn-3d btn-3d-emerald mx-auto w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 text-white flex flex-col items-center justify-center animate-pulse-ring border-4 border-white/80">
+              <span class="text-4xl sm:text-5xl">🔊</span>
+              <span class="text-xs font-black mt-1">DENGAR</span>
+            </button>
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <button onclick="playCurrentAudioQuestion()" class="bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 text-emerald-800 font-extrabold text-xs sm:text-sm px-4 py-2 rounded-2xl">
+                🔁 Ulangi Suara
+              </button>
+              <button onclick="toggleSnailMode(); playCurrentAudioQuestion();" class="bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 text-sky-800 font-extrabold text-xs sm:text-sm px-4 py-2 rounded-2xl">
+                🐢 Dengar Lebih Pelan
+              </button>
+            </div>
+            ${(!SpeechEngine.arabicAvailable && q.lang === 'ar') ? `
+              <div class="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2 inline-block">
+                <span class="text-xs font-bold text-amber-800">Bantuan baca (suara Arab perangkat belum aktif): </span>
+                <span class="font-extrabold text-amber-900">${escapeHtml(q.target.translit)}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Pilihan Balon Jawaban -->
+          <div class="grid grid-cols-2 gap-3 sm:gap-4">
+            ${q.options.map((opt, idx) => `
+              <button data-audio-opt="${escapeHtml(opt.id)}" onclick="answerAudioQuest('${escapeHtml(opt.id)}')"
+                class="btn-3d bg-gradient-to-b ${balloonColors[idx % 4]} border-2 rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-center text-center min-h-[125px] transition shadow-lg">
+                <span class="text-4xl sm:text-5xl mb-2">${escapeHtml(opt.emoji)}</span>
+                <span class="font-display font-bold text-lg sm:text-xl leading-tight">${escapeHtml(opt.idWord)}</span>
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Maskot -->
+          <div id="mascot-box" class="studio-glass rounded-3xl p-3">${renderMascotInner()}</div>
+        </div>
+      `;
+    }
+
+    /* =========================================================================
+       12. MODE 3: COCOKKAN PASANGAN (MEMORY MATCH 3D BERSUARA OTOMATIS)
+       ========================================================================= */
+    function setMemoryConfig(pairMode, pairCount) {
+      SFX.pop();
+      if (pairMode) state.memoryGame.pairMode = pairMode;
+      if (pairCount) state.memoryGame.pairCount = pairCount;
+      startMemoryMatch();
+    }
+
+    function startMemoryMatch() {
+      clearTimers();
+      const pool = getFilteredVocab();
+      const count = Math.min(state.memoryGame.pairCount, pool.length);
+      const picked = shuffle(pool).slice(0, count);
+      const mode = state.memoryGame.pairMode;
+
+      const cards = [];
+      picked.forEach(w => {
+        if (mode === 'EN_ID') {
+          cards.push({ pairId: w.id, type: 'en', label: w.enWord, sub: '🇬🇧 Inggris', speakText: w.enWord, speakLang: 'en', flipped: false, matched: false });
+          cards.push({ pairId: w.id, type: 'id', label: w.idWord, emoji: w.emoji, sub: '🇮🇩 Arti', speakText: w.enWord, speakLang: 'en', flipped: false, matched: false });
+        } else if (mode === 'AR_ID') {
+          cards.push({ pairId: w.id, type: 'ar', label: w.arWord, sub: w.translit, speakText: w.arWord, speakLang: 'ar', flipped: false, matched: false });
+          cards.push({ pairId: w.id, type: 'id', label: w.idWord, emoji: w.emoji, sub: '🇮🇩 Arti', speakText: w.arWord, speakLang: 'ar', flipped: false, matched: false });
+        } else {
+          cards.push({ pairId: w.id, type: 'en', label: w.enWord, emoji: w.emoji, sub: '🇬🇧 Inggris', speakText: w.enWord, speakLang: 'en', flipped: false, matched: false });
+          cards.push({ pairId: w.id, type: 'ar', label: w.arWord, sub: w.translit, speakText: w.arWord, speakLang: 'ar', flipped: false, matched: false });
+        }
+      });
+
+      state.memoryGame.cards = shuffle(cards);
+      state.memoryGame.flippedIndices = [];
+      state.memoryGame.matchedPairs = 0;
+      state.memoryGame.moves = 0;
+      state.memoryGame.locked = false;
+      state.memoryGame.finished = false;
+
+      state.mascotMood = 'idle';
+      state.mascotSpeech = 'Buka dua kartu kristal yang berpasangan! Setiap kartu terbuka, suaranya otomatis terdengar! 🔊';
+      renderMemoryMatch();
+    }
+
+    function clickMemoryCard(index) {
+      const g = state.memoryGame;
+      if (g.locked || g.finished) return;
+      const card = g.cards[index];
+      if (!card || card.flipped || card.matched) return;
+
+      SFX.whoosh();
+      card.flipped = true;
+      g.flippedIndices.push(index);
+
+      if (card.type === 'en' || card.type === 'ar') {
+        SpeechEngine.speak(card.speakText, card.speakLang);
+      }
+
+      renderMemoryMatch();
+
+      if (g.flippedIndices.length === 2) {
+        g.moves++;
+        g.locked = true;
+        const [i1, i2] = g.flippedIndices;
+        const c1 = g.cards[i1];
+        const c2 = g.cards[i2];
+
+        if (c1.pairId === c2.pairId) {
+          setTimeout(() => {
+            c1.matched = true;
+            c2.matched = true;
+            g.matchedPairs++;
+            g.flippedIndices = [];
+            g.locked = false;
+            SFX.ding();
+            recordCorrectAnswer(c1.pairId);
+            spawnFloatingFx('🧩 COCOK!', 'text-purple-400');
+            setMascot('happy', 'Pasangan cocok! Ingatanmu super tajam! 🧩✨');
+            renderMemoryMatch();
+
+            if (g.matchedPairs === g.cards.length / 2) {
+              finishMemoryMatch();
+            }
+          }, 420);
+        } else {
+          setTimeout(() => {
+            SFX.boing();
+            c1.flipped = false;
+            c2.flipped = false;
+            g.flippedIndices = [];
+            g.locked = false;
+            setMascot('encourage', 'Belum cocok, ingat posisi kartunya ya! Yuk buka lagi! 👀');
+            renderMemoryMatch();
+          }, 1150);
+        }
+      }
+    }
+
+    function finishMemoryMatch() {
+      const g = state.memoryGame;
+      g.finished = true;
+      state.roundsCompleted++;
+      const totalPairs = g.cards.length / 2;
+      const stars = g.moves <= totalPairs + 3 ? 3 : g.moves <= totalPairs + 7 ? 2 : 1;
+      const earnedXp = totalPairs * 15 + stars * 15;
+
+      addXP(earnedXp);
+      unlockBadge('memory_hero');
+      checkAutoBadges();
+      SFX.fanfare();
+      Confetti.burst(95);
+      World3D.spawnBurst(0xa78bfa, 45);
+
+      setTimeout(() => {
+        renderRoundResult({
+          title: "Semua Pasangan Cocok!",
+          stars,
+          correct: totalPairs,
+          total: totalPairs,
+          earnedXp,
+          extraLine: `Diselesaikan dalam ${g.moves} langkah hebat!`,
+          replayFn: "startMemoryMatch()"
+        });
+      }, 650);
+    }
+
+    function renderMemoryMatch() {
+      const main = document.getElementById('app-main');
+      const g = state.memoryGame;
+      const totalPairs = g.cards.length / 2;
+      const gridCols = totalPairs <= 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3 sm:grid-cols-4';
+
+      main.innerHTML = `
+        <div class="pointer-events-auto max-w-3xl mx-auto space-y-4">
+          <!-- Bar Atas -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <button onclick="navigateTo('home')" class="btn-3d btn-3d-slate bg-white/95 text-slate-700 font-extrabold text-sm px-4 py-2 rounded-2xl border-2 border-white">
+              ← Beranda
+            </button>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <div class="flex bg-white/90 backdrop-blur p-1 rounded-2xl border-2 border-purple-200 gap-1 shadow-sm">
+                <button onclick="setMemoryConfig('EN_ID', null)" class="px-2.5 py-1 rounded-xl text-xs font-extrabold ${g.pairMode === 'EN_ID' ? 'bg-purple-500 text-white' : 'text-slate-600'}">EN ↔ Arti</button>
+                <button onclick="setMemoryConfig('AR_ID', null)" class="px-2.5 py-1 rounded-xl text-xs font-extrabold ${g.pairMode === 'AR_ID' ? 'bg-purple-500 text-white' : 'text-slate-600'}">AR ↔ Arti</button>
+                <button onclick="setMemoryConfig('EN_AR', null)" class="px-2.5 py-1 rounded-xl text-xs font-extrabold ${g.pairMode === 'EN_AR' ? 'bg-purple-500 text-white' : 'text-slate-600'}">EN ↔ AR</button>
+              </div>
+              <div class="flex bg-white/90 backdrop-blur p-1 rounded-2xl border-2 border-sky-200 gap-1 shadow-sm">
+                <button onclick="setMemoryConfig(null, 4)" class="px-2.5 py-1 rounded-xl text-xs font-extrabold ${g.pairCount === 4 ? 'bg-sky-500 text-white' : 'text-slate-600'}">8 Kartu</button>
+                <button onclick="setMemoryConfig(null, 6)" class="px-2.5 py-1 rounded-xl text-xs font-extrabold ${g.pairCount === 6 ? 'bg-sky-500 text-white' : 'text-slate-600'}">12 Kartu</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistik Permainan -->
+          <div class="studio-glass flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm font-extrabold">
+            <span class="text-purple-700">🧩 Cocok: ${g.matchedPairs} / ${totalPairs}</span>
+            <span class="text-slate-700">👆 Langkah: ${g.moves}</span>
+            <button onclick="startMemoryMatch()" class="text-sky-600 hover:underline">🔄 Ulangi</button>
+          </div>
+
+          <!-- Grid Kartu -->
+          <div class="grid ${gridCols} gap-3">
+            ${g.cards.map((c, idx) => {
+              const revealed = c.flipped || c.matched;
+              return `
+                <div class="perspective-1200 h-36 sm:h-40">
+                  <div onclick="clickMemoryCard(${idx})" class="flip-inner cursor-pointer ${revealed ? 'is-flipped' : ''}">
+                    <!-- Punggung Kartu Kristal -->
+                    <div class="flip-face bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 border-4 border-white/85 shadow-xl flex flex-col items-center justify-center text-white hover:brightness-110">
+                      <span class="text-3xl sm:text-4xl drop-shadow">💎</span>
+                      <span class="text-[11px] font-black opacity-95 mt-1 tracking-wider">BUKA</span>
+                    </div>
+                    <!-- Wajah Kartu -->
+                    <div class="flip-face flip-back border-4 shadow-xl p-2.5 flex flex-col items-center justify-center text-center
+                      ${c.matched ? 'bg-emerald-50/95 border-emerald-400' : 'bg-white/95 border-purple-300'}">
+                      ${c.emoji ? `<div class="text-3xl sm:text-4xl mb-1 leading-none">${escapeHtml(c.emoji)}</div>` : ''}
+                      ${c.type === 'ar'
+                        ? `<div class="arabic-text text-3xl font-bold text-emerald-900 leading-relaxed" dir="rtl" lang="ar">${escapeHtml(c.label)}</div>
+                           <div class="text-[11px] font-bold text-emerald-600 leading-tight">${escapeHtml(c.sub)}</div>`
+                        : `<div class="font-display font-bold text-base sm:text-lg text-slate-800 leading-tight">${escapeHtml(c.label)}</div>
+                           <div class="text-[11px] font-bold text-slate-400 mt-0.5">${escapeHtml(c.sub)}</div>`
+                      }
+                      ${c.matched ? '<span class="absolute top-1.5 right-2 text-sm">✅</span>' : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Maskot -->
+          <div id="mascot-box" class="studio-glass rounded-3xl p-3">${renderMascotInner()}</div>
+        </div>
+      `;
+    }
+
+    /* =========================================================================
+       13. MODE 4: MISI BINTANG (KUIS KILAT, COMBO STREAK, BOSS SHIELD & SPACED REPETITION)
+       ========================================================================= */
+    function buildSpacedRepetitionRound(count = 10) {
+      const pool = getFilteredVocab();
+      const basketIds = Object.keys(state.practiceBasket);
+      const basketWords = state.vocab.filter(w => basketIds.includes(w.id));
+
+      const selected = [];
+      const fromBasket = shuffle(basketWords).slice(0, Math.min(4, Math.ceil(count * 0.4)));
+      fromBasket.forEach(w => selected.push(w));
+
+      const remaining = shuffle(pool.filter(w => !selected.some(s => s.id === w.id)));
+      while (selected.length < count && remaining.length > 0) {
+        selected.push(remaining.shift());
+      }
+      if (selected.length < count) {
+        const extra = shuffle(state.vocab.filter(w => !selected.some(s => s.id === w.id)));
+        while (selected.length < count && extra.length > 0) {
+          selected.push(extra.shift());
+        }
+      }
+      return shuffle(selected);
+    }
+
+    function startMissionMode() {
+      clearTimers();
+      const words = buildSpacedRepetitionRound(10);
+      const qTypes = ['IMG_TO_EN', 'IMG_TO_AR', 'AUDIO_TO_ID', 'EN_TO_AR', 'AR_TO_EN'];
+
+      const questions = words.map((target, idx) => {
+        const isBoss = (idx === words.length - 1) || (idx === 4);
+        const type = isBoss ? (Math.random() < 0.5 ? 'EN_TO_AR' : 'AR_TO_EN') : qTypes[idx % qTypes.length];
+        const distractors = shuffle(state.vocab.filter(w => w.id !== target.id && w.idWord !== target.idWord)).slice(0, 3);
+        const options = shuffle([target, ...distractors]);
+        const audioLang = Math.random() < 0.5 ? 'en' : 'ar';
+        const isReview = !!state.practiceBasket[target.id];
+        return { target, type, options, isBoss, audioLang, isReview };
+      });
+
+      state.missionGame = {
+        questions,
+        qIndex: 0,
+        score: 0,
+        correctCount: 0,
+        combo: 0,
+        maxComboRound: 0,
+        bossDefeated: 0,
+        locked: false,
+        finished: false
+      };
+
+      state.mascotMood = 'idle';
+      state.mascotSpeech = 'Ayo taklukkan Misi Bintang & kalahkan Perisai Bos! Nyalakan Api Combo-mu! 🔥';
+      renderMissionMode();
+      autoSpeakMissionIfNeeded();
+    }
+
+    function autoSpeakMissionIfNeeded() {
+      const q = state.missionGame.questions[state.missionGame.qIndex];
+      if (!q) return;
+      if (q.type === 'AUDIO_TO_ID') {
+        SpeechEngine.speak(q.audioLang === 'ar' ? q.target.arWord : q.target.enWord, q.audioLang);
+      } else if (q.type === 'EN_TO_AR') {
+        SpeechEngine.speak(q.target.enWord, 'en');
+      } else if (q.type === 'AR_TO_EN') {
+        SpeechEngine.speak(q.target.arWord, 'ar');
+      }
+    }
+
+    function answerMission(chosenId) {
+      const g = state.missionGame;
+      if (g.locked) return;
+      const q = g.questions[g.qIndex];
+      if (!q) return;
+      g.locked = true;
+
+      const btns = document.querySelectorAll('[data-mission-opt]');
+      btns.forEach(btn => {
+        const id = btn.getAttribute('data-mission-opt');
+        if (id === q.target.id) {
+          btn.classList.add('ring-4', 'ring-emerald-400', 'bg-emerald-100', 'border-emerald-500');
+        } else if (id === chosenId) {
+          btn.classList.add('ring-4', 'ring-amber-400', 'bg-amber-50', 'border-amber-400');
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+
+      if (chosenId === q.target.id) {
+        g.correctCount++;
+        g.combo++;
+        if (g.combo > g.maxComboRound) g.maxComboRound = g.combo;
+        if (g.combo > state.bestCombo) state.bestCombo = g.combo;
+        if (q.isBoss) g.bossDefeated++;
+
+        const bonus = (q.isBoss ? 40 : 20) + (g.combo >= 3 ? 10 : 0);
+        g.score += bonus;
+
+        if (g.combo >= 3 || q.isBoss) {
+          SFX.fanfare();
+          spawnFloatingFx(q.isBoss ? `👑 BOS TAKLUK +${bonus}!` : `🔥 ${g.combo}x COMBO +${bonus}!`, 'text-amber-400');
+          if (q.isBoss) {
+            Confetti.burst(45);
+            World3D.spawnBurst(0xf59e0b, 35);
+          }
+        } else {
+          SFX.ding();
+          spawnFloatingFx(`⭐ +${bonus} POIN!`, 'text-emerald-400');
+        }
+        recordCorrectAnswer(q.target.id);
+        checkAutoBadges();
+        setMascot('happy', q.isBoss
+          ? `👑 BOS TAKLUK! Luar biasa, +${bonus} poin!`
+          : g.combo >= 3
+          ? `🔥 ${g.combo}x COMBO API MENYALA! Hebat sekali!`
+          : randomItem(PRAISE_MESSAGES));
+
+        setTimeout(() => advanceMission(), 1150);
+      } else {
+        g.combo = 0;
+        SFX.boing();
+        recordWrongAnswer(q.target.id);
+        setMascot('encourage', `Hampir benar! "${q.target.idWord}" = ${q.target.enWord} (${q.target.translit}). Kita ulang nanti ya! 💪`);
+        setTimeout(() => advanceMission(), 2100);
+      }
+    }
+
+    function advanceMission() {
+      if (state.currentView !== 'mission') return;
+      const g = state.missionGame;
+      g.qIndex++;
+      if (g.qIndex >= g.questions.length) {
+        finishMissionMode();
+      } else {
+        g.locked = false;
+        renderMissionMode();
+        autoSpeakMissionIfNeeded();
+      }
+    }
+
+    function finishMissionMode() {
+      const g = state.missionGame;
+      g.finished = true;
+      state.roundsCompleted++;
+      const total = g.questions.length;
+      const ratio = g.correctCount / total;
+      const stars = ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1;
+      const earnedXp = Math.round(g.score * 0.6) + stars * 15;
+
+      addXP(earnedXp);
+      unlockBadge('boss_slayer');
+      checkAutoBadges();
+      SFX.fanfare();
+      Confetti.burst(115);
+      World3D.spawnBurst(0xfbbf24, 55);
+
+      renderRoundResult({
+        title: "Misi Bintang Berhasil!",
+        stars,
+        correct: g.correctCount,
+        total,
+        earnedXp,
+        extraLine: `Combo Tertinggi: 🔥 ${g.maxComboRound}x • Skor: ${g.score}`,
+        replayFn: "startMissionMode()"
+      });
+    }
+
+    function renderMissionMode() {
+      const main = document.getElementById('app-main');
+      const g = state.missionGame;
+      const q = g.questions[g.qIndex];
+      if (!q) return;
+
+      // Kamera 3D sedikit mendekat secara dramatis saat Boss Challenge!
+      World3D.orbit.targetDistance = q.isBoss ? 10.2 : 12.0;
+
+      const progressPct = Math.round((g.qIndex / g.questions.length) * 100);
+      const bossShieldPct = Math.max(0, 100 - g.bossDefeated * 50);
+
+      let promptTitle = '';
+      let promptBody = '';
+
+      if (q.type === 'IMG_TO_EN') {
+        promptTitle = 'Pilih Bahasa Inggris yang tepat!';
+        promptBody = `
+          <div class="text-6xl sm:text-7xl mb-2 animate-float">${escapeHtml(q.target.emoji)}</div>
+          <div class="font-display font-bold text-2xl sm:text-3xl text-slate-800">${escapeHtml(q.target.idWord)}</div>
+        `;
+      } else if (q.type === 'IMG_TO_AR') {
+        promptTitle = 'Pilih Bahasa Arab yang tepat!';
+        promptBody = `
+          <div class="text-6xl sm:text-7xl mb-2 animate-float">${escapeHtml(q.target.emoji)}</div>
+          <div class="font-display font-bold text-2xl sm:text-3xl text-slate-800">${escapeHtml(q.target.idWord)}</div>
+        `;
+      } else if (q.type === 'AUDIO_TO_ID') {
+        promptTitle = q.audioLang === 'ar' ? 'Dengar suara Arab, pilih artinya!' : 'Dengar suara Inggris, pilih artinya!';
+        promptBody = `
+          <button onclick="autoSpeakMissionIfNeeded()" class="btn-3d btn-3d-blue mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 text-white flex flex-col items-center justify-center animate-pulse-ring border-4 border-white/80">
+            <span class="text-4xl">🔊</span>
+            <span class="text-[11px] font-black">ULANGI</span>
+          </button>
+          ${(!SpeechEngine.arabicAvailable && q.audioLang === 'ar') ? `<div class="mt-2 text-sm font-extrabold text-amber-800 bg-amber-50 inline-block px-3 py-1 rounded-xl">${escapeHtml(q.target.translit)}</div>` : ''}
+        `;
+      } else if (q.type === 'EN_TO_AR') {
+        promptTitle = 'Cocokkan kata Inggris ini ke Bahasa Arab!';
+        promptBody = `
+          <div class="text-5xl mb-1">${escapeHtml(q.target.emoji)}</div>
+          <div class="font-display font-bold text-3xl text-blue-700">${escapeHtml(q.target.enWord)}</div>
+          <button onclick="SpeechEngine.speak('${escapeHtml(q.target.enWord).replace(/'/g, "\\'")}', 'en')" class="mt-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-extrabold text-xs px-3 py-1.5 rounded-xl border border-blue-200">🔊 Dengar Inggris</button>
+        `;
+      } else {
+        promptTitle = 'Cocokkan kata Arab ini ke Bahasa Inggris!';
+        promptBody = `
+          <div class="text-5xl mb-1">${escapeHtml(q.target.emoji)}</div>
+          <div class="arabic-text arabic-hero text-emerald-900" dir="rtl" lang="ar">${escapeHtml(q.target.arWord)}</div>
+          <div class="text-sm font-extrabold text-emerald-700">${escapeHtml(q.target.translit)}</div>
+          <button onclick="SpeechEngine.speak('${escapeHtml(q.target.arWord).replace(/'/g, "\\'")}', 'ar')" class="mt-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-extrabold text-xs px-3 py-1.5 rounded-xl border border-emerald-200">🔊 Dengar Arab</button>
+        `;
+      }
+
+      const renderOptionContent = (opt) => {
+        if (q.type === 'IMG_TO_EN' || q.type === 'AR_TO_EN') {
+          return `<div class="font-display font-bold text-lg sm:text-xl text-slate-800">${escapeHtml(opt.enWord)}</div>`;
+        }
+        if (q.type === 'IMG_TO_AR' || q.type === 'EN_TO_AR') {
+          return `
+            <div class="arabic-text arabic-card text-emerald-950" dir="rtl" lang="ar">${escapeHtml(opt.arWord)}</div>
+            <div class="text-xs font-extrabold text-emerald-700 mt-0.5">${escapeHtml(opt.translit)}</div>
+          `;
+        }
+        return `
+          <div class="text-3xl mb-1">${escapeHtml(opt.emoji)}</div>
+          <div class="font-display font-bold text-lg text-slate-800">${escapeHtml(opt.idWord)}</div>
+        `;
+      };
+
+      main.innerHTML = `
+        <div class="pointer-events-auto max-w-2xl mx-auto space-y-4">
+          <!-- Header Misi -->
+          <div class="flex items-center justify-between gap-2">
+            <button onclick="navigateTo('home')" class="btn-3d btn-3d-slate bg-white/95 text-slate-700 font-extrabold text-sm px-4 py-2 rounded-2xl border-2 border-white">
+              ← Beranda
+            </button>
+
+            <div class="flex items-center gap-2">
+              ${g.combo >= 2 ? `
+                <div class="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white px-3.5 py-1.5 rounded-2xl font-black text-sm shadow-lg animate-flame">
+                  🔥 ${g.combo}x Combo!
+                </div>
+              ` : `
+                <div class="studio-glass text-amber-700 px-3 py-1.5 rounded-2xl font-extrabold text-sm">
+                  ⭐ ${g.score} Poin
+                </div>
+              `}
+              <div class="studio-glass text-sky-700 px-3 py-1.5 rounded-2xl font-extrabold text-sm">
+                ${g.qIndex + 1}/${g.questions.length}
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full h-3.5 bg-white/80 backdrop-blur rounded-full overflow-hidden border border-white">
+            <div class="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 rounded-full transition-all duration-300" style="width:${progressPct}%"></div>
+          </div>
+
+          <!-- Kartu Soal + Boss Shield Bar -->
+          <div class="rounded-3xl p-5 sm:p-6 text-center shadow-2xl border-4 backdrop-blur-xl
+            ${q.isBoss
+              ? 'bg-gradient-to-b from-amber-50/95 via-yellow-50/95 to-white/95 border-amber-400'
+              : 'bg-white/90 border-white'}">
+            ${q.isBoss ? `
+              <div class="mb-3 bg-amber-100/90 border border-amber-300 rounded-2xl p-2.5">
+                <div class="flex items-center justify-between text-xs font-black text-amber-900 mb-1">
+                  <span>👑 PERISAI BOS BINTANG (2x POIN!)</span>
+                  <span>🛡️ ${bossShieldPct}%</span>
+                </div>
+                <div class="w-full h-2.5 bg-white rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-amber-500 to-rose-500 transition-all duration-500" style="width:${bossShieldPct}%"></div>
+                </div>
+              </div>
+            ` : ''}
+            <div class="flex flex-wrap items-center justify-center gap-2 mb-2">
+              ${q.isReview ? '<span class="bg-orange-100 text-orange-800 text-xs font-black px-3 py-1 rounded-full">🧺 Latihan Ulang (Butuh 2x Benar)</span>' : ''}
+            </div>
+            <p class="text-sm font-extrabold text-slate-500 mb-3">${promptTitle}</p>
+            ${promptBody}
+          </div>
+
+          <!-- Pilihan Jawaban -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${q.options.map(opt => `
+              <button data-mission-opt="${escapeHtml(opt.id)}" onclick="answerMission('${escapeHtml(opt.id)}')"
+                class="btn-3d btn-3d-slate bg-white/95 hover:bg-sky-50 border-2 border-white rounded-3xl p-4 min-h-[88px] flex flex-col items-center justify-center text-center transition shadow-lg">
+                ${renderOptionContent(opt)}
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Maskot -->
+          <div id="mascot-box" class="studio-glass rounded-3xl p-3">${renderMascotInner()}</div>
+        </div>
+      `;
+    }
+
+    /* =========================================================================
+       14. LAYAR HASIL RONDE CERIA (BINTANG 1–3, XP & CONFETTI)
+       ========================================================================= */
+    function renderRoundResult({ title, stars, correct, total, earnedXp, extraLine = '', replayFn }) {
+      const main = document.getElementById('app-main');
+      const starHtml = [1, 2, 3].map(n =>
+        `<span class="text-5xl sm:text-6xl transition-transform ${n <= stars ? 'scale-110 drop-shadow-md' : 'opacity-25 grayscale'}">⭐</span>`
+      ).join('');
+
+      const cheer = stars === 3
+        ? "Luar Biasa Sempurna! Kamu Juara Pulau Kata! 🏆"
+        : stars === 2
+        ? "Keren Sekali! Sedikit lagi dapat 3 Bintang! 🌟"
+        : "Hebat sudah berani berlatih! Yuk main sekali lagi biar makin jago! 💪";
+
+      main.innerHTML = `
+        <div class="pointer-events-auto max-w-lg mx-auto studio-glass rounded-3xl border-4 border-amber-300 shadow-2xl p-6 sm:p-8 text-center space-y-5 mt-4">
+          <div class="flex justify-center gap-3">${starHtml}</div>
+          <div>
+            <h2 class="font-display font-bold text-2xl sm:text-3xl text-slate-800">${escapeHtml(title)}</h2>
+            <p class="text-sm sm:text-base font-bold text-sky-600 mt-1">${cheer}</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3">
+              <div class="text-2xl font-black text-emerald-700">${correct} / ${total}</div>
+              <div class="text-xs font-extrabold text-emerald-600">Jawaban Tepat</div>
+            </div>
+            <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3">
+              <div class="text-2xl font-black text-amber-600">+${earnedXp} XP</div>
+              <div class="text-xs font-extrabold text-amber-700">Hadiah Petualang</div>
+            </div>
+          </div>
+
+          ${extraLine ? `<div class="bg-purple-50 border border-purple-200 text-purple-800 font-extrabold text-sm py-2 px-4 rounded-2xl">${escapeHtml(extraLine)}</div>` : ''}
+
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <button onclick="navigateTo('home')" class="btn-3d btn-3d-slate bg-slate-100 text-slate-700 font-display font-bold py-3.5 rounded-2xl text-base">
+              🏠 Beranda
+            </button>
+            <button onclick="${replayFn}" class="btn-3d btn-3d-emerald bg-emerald-500 text-white font-display font-bold py-3.5 rounded-2xl text-base">
+              🔄 Main Lagi!
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    /* =========================================================================
+       15. MODAL LENCANA (BADGES)
+       ========================================================================= */
+    function openBadgesModal() {
+      SFX.pop();
+      const lv = getLevelInfo();
+      const body = document.getElementById('badges-modal-body');
+      body.innerHTML = `
+        <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-center">
+          <div class="text-xs font-black uppercase text-amber-600">Level ${lv.level}</div>
+          <div class="font-display font-bold text-2xl text-slate-800">${lv.title}</div>
+          <div class="text-sm font-extrabold text-slate-600 mt-0.5">Total ${state.xp} XP • Combo Terbaik: 🔥 ${state.bestCombo}x</div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          ${BADGE_DEFS.map(b => {
+            const unlocked = state.badges.includes(b.id);
+            return `
+              <div class="rounded-2xl border-2 p-3.5 flex items-center gap-3 ${unlocked ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-60 grayscale'}">
+                <div class="text-4xl">${b.icon}</div>
+                <div>
+                  <div class="font-display font-bold text-base text-slate-800">${b.title}</div>
+                  <div class="text-xs font-semibold text-slate-500">${b.desc}</div>
+                  <div class="text-[11px] font-black mt-0.5 ${unlocked ? 'text-emerald-600' : 'text-slate-400'}">${unlocked ? '✅ Terbuka' : '🔒 Terkunci'}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      document.getElementById('badges-modal').classList.remove('hidden');
+    }
+
+    function closeBadgesModal() {
+      SFX.pop();
+      document.getElementById('badges-modal').classList.add('hidden');
+    }
+
+    /* =========================================================================
+       16. PANEL GURU & ORANG TUA (GERBANG KONFIRMASI, UPLOAD CSV/TXT, LAPORAN)
+       ========================================================================= */
+    let currentGateAnswer = 0;
+
+    function openParentGate() {
+      SFX.pop();
+      const a = Math.floor(Math.random() * 6) + 4; // 4..9
+      const b = Math.floor(Math.random() * 5) + 3; // 3..7
+      currentGateAnswer = a * b;
+      document.getElementById('gate-question').textContent = `${a} × ${b} = ?`;
+      document.getElementById('gate-feedback').textContent = '';
+
+      const opts = shuffle([currentGateAnswer, currentGateAnswer + 2, currentGateAnswer - 3]);
+      document.getElementById('gate-options').innerHTML = opts.map(val => `
+        <button onclick="checkParentGate(${val})" class="btn-3d btn-3d-purple bg-purple-500 text-white font-display font-bold text-xl py-3 rounded-2xl">
+          ${val}
+        </button>
+      `).join('');
+
+      document.getElementById('parent-gate-modal').classList.remove('hidden');
+    }
+
+    function checkParentGate(val) {
+      if (val === currentGateAnswer) {
+        SFX.ding();
+        document.getElementById('parent-gate-modal').classList.add('hidden');
+        openTeacherModal();
+      } else {
+        SFX.boing();
+        document.getElementById('gate-feedback').textContent = 'Jawaban belum tepat, coba hitung lagi ya!';
+      }
+    }
+
+    function closeParentGate() {
+      SFX.pop();
+      document.getElementById('parent-gate-modal').classList.add('hidden');
+    }
+
+    function openTeacherModal() {
+      clearTimers();
+      document.getElementById('teacher-word-count').textContent = state.vocab.length;
+      const syncEl = document.getElementById('sync-status-label');
+      if (syncEl) {
+        syncEl.textContent = (window.CloudStorage && window.CloudStorage.mode === 'cloud')
+          ? '☁️ Progres & kata kustom tersimpan otomatis'
+          : '💾 Progres aktif dalam sesi browser ini';
+      }
+      document.getElementById('teacher-modal').classList.remove('hidden');
+      switchTeacherTab(state.teacherTab || 'report');
+    }
+
+    function closeTeacherModal() {
+      SFX.pop();
+      document.getElementById('teacher-modal').classList.add('hidden');
+      if (state.currentView === 'home') renderHome();
+    }
+
+    function switchTeacherTab(tab) {
+      state.teacherTab = tab;
+      ['report', 'upload', 'list'].forEach(t => {
+        const btn = document.getElementById('tab-btn-' + t);
+        if (!btn) return;
+        if (t === tab) {
+          btn.className = 'px-4 py-2 rounded-t-2xl font-bold text-sm border-b-4 border-sky-500 bg-white text-sky-700 transition whitespace-nowrap';
+        } else {
+          btn.className = 'px-4 py-2 rounded-t-2xl font-bold text-sm border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition whitespace-nowrap';
+        }
+      });
+      renderTeacherTabContent();
+    }
+
+    function renderTeacherTabContent() {
+      const box = document.getElementById('teacher-tab-content');
+      document.getElementById('teacher-word-count').textContent = state.vocab.length;
+
+      if (state.teacherTab === 'report') {
+        const masteredWords = state.vocab.filter(w => state.masteredIds.includes(w.id));
+        const reviewWords = state.vocab.filter(w => !!state.practiceBasket[w.id]);
+        const untouchedCount = state.vocab.length - masteredWords.length - reviewWords.length;
+
+        box.innerHTML = `
+          <div class="space-y-5">
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3">
+                <div class="text-2xl font-black text-emerald-700">${masteredWords.length}</div>
+                <div class="text-xs font-extrabold text-emerald-700">Sudah Dikuasai</div>
+              </div>
+              <div class="bg-orange-50 border-2 border-orange-200 rounded-2xl p-3">
+                <div class="text-2xl font-black text-orange-600">${reviewWords.length}</div>
+                <div class="text-xs font-extrabold text-orange-700">Perlu Diulang</div>
+              </div>
+              <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3">
+                <div class="text-2xl font-black text-slate-700">${Math.max(0, untouchedCount)}</div>
+                <div class="text-xs font-extrabold text-slate-600">Belum Dinilai</div>
+              </div>
+            </div>
+
+            <!-- Daftar Sudah Dikuasai (Hijau) -->
+            <div>
+              <h3 class="font-display font-bold text-base text-emerald-700 mb-2">✅ Sudah Dikuasai (${masteredWords.length})</h3>
+              ${masteredWords.length === 0
+                ? '<p class="text-xs text-slate-500 bg-slate-50 rounded-xl p-3">Belum ada kata yang ditandai Sudah Hafal di Kartu Ajaib.</p>'
+                : `<div class="flex flex-wrap gap-2">${masteredWords.map(w => `
+                    <span class="bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-1 rounded-full text-xs font-bold">
+                      ${escapeHtml(w.emoji)} ${escapeHtml(w.idWord)} • ${escapeHtml(w.enWord)}
+                    </span>
+                  `).join('')}</div>`
+              }
+            </div>
+
+            <!-- Daftar Perlu Diulang (Oranye) -->
+            <div>
+              <h3 class="font-display font-bold text-base text-orange-600 mb-2">🔁 Perlu Diulang / Keranjang Latihan (${reviewWords.length})</h3>
+              ${reviewWords.length === 0
+                ? '<p class="text-xs text-slate-500 bg-slate-50 rounded-xl p-3">Keranjang latihan ulang masih kosong. Bagus sekali!</p>'
+                : `<div class="flex flex-wrap gap-2">${reviewWords.map(w => `
+                    <span class="bg-orange-100 text-orange-900 border border-orange-300 px-3 py-1 rounded-full text-xs font-bold">
+                      ${escapeHtml(w.emoji)} ${escapeHtml(w.idWord)} (${escapeHtml(w.enWord)} / ${escapeHtml(w.translit)})
+                    </span>
+                  `).join('')}</div>`
+              }
+            </div>
+
+            <!-- Tombol Reset Progres dengan Konfirmasi Inline (tanpa browser confirm) -->
+            <div class="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs text-slate-500 font-semibold">Ingin memulai progres hafalan dari awal?</span>
+              <div id="reset-progress-area">
+                <button onclick="showResetProgressConfirm()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs px-3.5 py-2 rounded-xl">
+                  🗑️ Reset Progres Anak
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (state.teacherTab === 'upload') {
+        box.innerHTML = `
+          <div class="space-y-4">
+            <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 text-sm text-sky-900 space-y-2">
+              <div class="font-extrabold">📋 Format Kosakata (CSV / Teks per baris):</div>
+              <code class="block bg-white px-3 py-2 rounded-xl border border-sky-200 text-xs font-mono text-slate-700">
+                Indonesia, Inggris, Arab, Transliterasi, Emoji, Kategori(opsional)
+              </code>
+              <p class="text-xs text-sky-700">Contoh: <strong>Buku, Book, كِتَابٌ, Kitaabun, 📖, Sekolah</strong></p>
+              <button onclick="downloadCsvTemplate()" class="btn-3d btn-3d-blue bg-sky-500 text-white font-extrabold text-xs px-4 py-2 rounded-xl inline-flex items-center gap-1.5 mt-1">
+                📥 Download Contoh Template CSV
+              </button>
+            </div>
+
+            <!-- Upload File -->
+            <div>
+              <label class="block text-xs font-extrabold text-slate-600 mb-1.5">1. Pilih File CSV / TXT dari perangkat:</label>
+              <input type="file" id="vocab-file-input" accept=".csv,.txt" onchange="handleVocabFileSelect(event)"
+                class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-extrabold file:bg-purple-100 file:text-purple-800 hover:file:bg-purple-200 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-2.5" />
+            </div>
+
+            <!-- Paste Teks -->
+            <div>
+              <label class="block text-xs font-extrabold text-slate-600 mb-1.5">2. Atau tempel (paste) daftar kosakata langsung di sini:</label>
+              <textarea id="vocab-paste-area" rows="5" placeholder="Apel, Apple, تُفَّاحٌ, Tuffaahun, 🍎, Buah&#10;Kucing, Cat, قِطٌّ, Qiththun, 🐱, Hewan"
+                class="w-full rounded-2xl border-2 border-slate-200 focus:border-sky-400 focus:outline-none p-3 text-sm font-medium"></textarea>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button onclick="importCustomVocab('append')" class="btn-3d btn-3d-emerald flex-1 bg-emerald-500 text-white font-extrabold text-sm py-3 px-4 rounded-2xl">
+                ➕ Tambahkan ke Daftar
+              </button>
+              <button onclick="importCustomVocab('replace')" class="btn-3d btn-3d-amber flex-1 bg-amber-400 text-amber-950 font-extrabold text-sm py-3 px-4 rounded-2xl">
+                🔄 Ganti Seluruh Daftar
+              </button>
+            </div>
+
+            <div class="pt-3 border-t border-slate-200 flex items-center justify-between flex-wrap gap-2">
+              <span class="text-xs text-slate-500 font-semibold">Kembalikan 97 kata asli Kurikulum Plus Kelas 4:</span>
+              <button onclick="restoreDefaultVocab()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl">
+                ↩️ Kembalikan Kata Bawaan
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        box.innerHTML = `
+          <div class="space-y-3">
+            <input type="text" id="teacher-search-input" oninput="filterTeacherWordTable()" placeholder="🔍 Cari kata Indonesia, Inggris, atau Arab..."
+              class="w-full rounded-2xl border-2 border-slate-200 focus:border-sky-400 focus:outline-none px-4 py-2.5 text-sm font-bold" />
+            <div id="teacher-word-table" class="space-y-2 max-h-[48vh] overflow-y-auto pr-1"></div>
+          </div>
+        `;
+        filterTeacherWordTable();
+      }
+    }
+
+    function filterTeacherWordTable() {
+      const q = (document.getElementById('teacher-search-input')?.value || '').trim().toLowerCase();
+      const container = document.getElementById('teacher-word-table');
+      if (!container) return;
+
+      const filtered = state.vocab.filter(w =>
+        !q ||
+        w.idWord.toLowerCase().includes(q) ||
+        w.enWord.toLowerCase().includes(q) ||
+        w.arWord.includes(q) ||
+        w.translit.toLowerCase().includes(q) ||
+        w.category.toLowerCase().includes(q)
+      );
+
+      container.innerHTML = filtered.map(w => `
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">${escapeHtml(w.emoji)}</span>
+            <div>
+              <div class="font-extrabold text-sm text-slate-800">${escapeHtml(w.idWord)} <span class="text-sky-600 font-bold">• ${escapeHtml(w.enWord)}</span></div>
+              <div class="text-xs text-slate-500 font-bold">${escapeHtml(w.category)} • 🗣️ ${escapeHtml(w.translit)}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="arabic-text text-2xl font-bold text-emerald-900" dir="rtl" lang="ar">${escapeHtml(w.arWord)}</span>
+            <button onclick="SpeechEngine.speak('${escapeHtml(w.enWord).replace(/'/g, "\\'")}', 'en')" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-extrabold px-2 py-1 rounded-lg">EN</button>
+            <button onclick="SpeechEngine.speak('${escapeHtml(w.arWord).replace(/'/g, "\\'")}', 'ar')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-extrabold px-2 py-1 rounded-lg">AR</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showResetProgressConfirm() {
+      const area = document.getElementById('reset-progress-area');
+      if (!area) return;
+      area.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-rose-600">Yakin reset?</span>
+          <button onclick="confirmResetProgress()" class="bg-rose-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl">Ya, Reset</button>
+          <button onclick="renderTeacherTabContent()" class="bg-slate-200 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-xl">Batal</button>
+        </div>
+      `;
+    }
+
+    function confirmResetProgress() {
+      state.xp = 0;
+      state.roundsCompleted = 0;
+      state.bestCombo = 0;
+      state.masteredIds = [];
+      state.practiceBasket = {};
+      state.badges = [];
+      updateHeaderStats();
+      persistState();
+      showToast("Progres hafalan berhasil direset ke awal.", "sky");
+      renderTeacherTabContent();
+    }
+
+    function downloadCsvTemplate() {
+      const sample = [
+        "Indonesia,Inggris,Arab,Transliterasi,Emoji,Kategori",
+        "Buku,Book,كِتَابٌ,Kitaabun,📖,Sekolah",
+        "Pensil,Pencil,قَلَمُ رَصَاصٍ,Qalamu rashaashin,✏️,Sekolah",
+        "Kucing,Cat,قِطٌّ,Qiththun,🐱,Hewan",
+        "Apel,Apple,تُفَّاحٌ,Tuffaahun,🍎,Buah"
+      ].join("\n");
+      const blob = new Blob(["\uFEFF" + sample], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template_kosakata_pulau_kata.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("📥 Template CSV berhasil diunduh!", "emerald");
+    }
+
+    function handleVocabFileSelect(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const ta = document.getElementById('vocab-paste-area');
+        if (ta) ta.value = e.target.result || '';
+        showToast("📄 File berhasil dibaca! Klik Tambahkan atau Ganti Daftar.", "sky");
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    function parseVocabLines(rawText) {
+      const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const parsed = [];
+      lines.forEach((line, idx) => {
+        // Lewati baris header jika ada
+        if (idx === 0 && /^indonesia/i.test(line)) return;
+        const parts = line.split(/[;,]/).map(p => p.trim());
+        if (parts.length < 2) return;
+        parsed.push({
+          id: 'custom-' + Date.now() + '-' + idx,
+          pack: 'Kustom',
+          category: parts[5] || 'Kosakata Baru',
+          idWord: parts[0] || 'Kata',
+          enWord: parts[1] || parts[0],
+          arWord: parts[2] || parts[0],
+          translit: parts[3] || parts[1] || '',
+          emoji: parts[4] || '🌟'
+        });
+      });
+      return parsed;
+    }
+
+    function importCustomVocab(mode) {
+      const raw = document.getElementById('vocab-paste-area')?.value || '';
+      const newWords = parseVocabLines(raw);
+      if (newWords.length === 0) {
+        showToast("Belum ada baris kata yang valid. Gunakan format: Indonesia, Inggris, Arab, Transliterasi, Emoji", "rose");
+        return;
+      }
+      if (mode === 'replace') {
+        state.vocab = newWords;
+        state.selectedFilter = 'ALL';
+      } else {
+        state.vocab = [...newWords, ...state.vocab];
+      }
+      persistState();
+      SFX.fanfare();
+      showToast(`✅ Berhasil memuat ${newWords.length} kosakata baru!`, "emerald");
+      switchTeacherTab('list');
+    }
+
+    function restoreDefaultVocab() {
+      state.vocab = JSON.parse(JSON.stringify(DEFAULT_VOCAB));
+      state.selectedFilter = 'ALL';
+      persistState();
+      SFX.ding();
+      showToast("↩️ 97 Kosakata Kurikulum Plus Kelas 4 telah dikembalikan!", "sky");
+      switchTeacherTab('list');
+    }
+
+    /* =========================================================================
+       17. BOOTSTRAP APLIKASI + KONTROL KEYBOARD + DUNIA 3D
+       ========================================================================= */
+    function applySavedData(parsed) {
+      if (!parsed || typeof parsed !== 'object') return;
+      if (Array.isArray(parsed.vocab) && parsed.vocab.length > 0) state.vocab = parsed.vocab;
+      if (typeof parsed.xp === 'number') state.xp = parsed.xp;
+      if (typeof parsed.roundsCompleted === 'number') state.roundsCompleted = parsed.roundsCompleted;
+      if (typeof parsed.bestCombo === 'number') state.bestCombo = parsed.bestCombo;
+      if (Array.isArray(parsed.masteredIds)) state.masteredIds = parsed.masteredIds;
+      if (parsed.practiceBasket && typeof parsed.practiceBasket === 'object') state.practiceBasket = parsed.practiceBasket;
+      if (Array.isArray(parsed.badges)) state.badges = parsed.badges;
+      if (typeof parsed.snailMode === 'boolean') state.snailMode = parsed.snailMode;
+      if (typeof parsed.sfxMuted === 'boolean') state.sfxMuted = parsed.sfxMuted;
+      if (['day', 'sunset', 'night'].includes(parsed.lightingMood)) state.lightingMood = parsed.lightingMood;
+    }
+
+    // Pintasan keyboard untuk Kartu Ajaib 3D (Spasi = Balik, Panah Kiri/Kanan = Ganti Kartu)
+    window.addEventListener('keydown', (e) => {
+      if (state.currentView !== 'flashcard') return;
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        flipFlashcard();
+      } else if (e.code === 'ArrowRight') {
+        nextFlashcard(1);
+      } else if (e.code === 'ArrowLeft') {
+        nextFlashcard(-1);
+      }
+    });
+
+    window.__pulauKataBooted = false;
+    window.bootPulauKata = async function () {
+      if (window.__pulauKataBooted) return;
+      window.__pulauKataBooted = true;
+      Confetti.init();
+      SpeechEngine.init();
+
+      // 1. Muat cepat dari localStorage lokal
+      try {
+        const localRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (localRaw) applySavedData(JSON.parse(localRaw));
+      } catch (e) {}
+
+      // 2. Sinkronkan dari CloudStorage bila aktif
+      if (window.CloudStorage) {
+        const saved = await window.CloudStorage.init();
+        if (saved && saved.dataJson) {
+          try {
+            applySavedData(JSON.parse(saved.dataJson));
+          } catch (e) {}
+        }
+      }
+
+      // 3. Jalankan Dunia 3D Realistis Three.js setelah halaman siap
+      World3D.init();
+      updateHeaderStats();
+      renderHome();
+    };
+
+    window.addEventListener('load', () => {
+      if (window.__cloudModuleReady && typeof window.bootPulauKata === 'function') {
+        window.bootPulauKata();
+      } else if (!window.CloudStorage) {
+        window.bootPulauKata();
+      }
+    });
+  </script>
+</body>
+</html>
